@@ -3,7 +3,7 @@ import os
 from PIL import Image, ImageDraw, ImageColor, ImageFont
 
 def load_annotation(image_key):
-    with open(os.path.join('annotations', '{:s}.json'.format(image_key)), 'r') as fid:
+    with open(os.path.join('data/annotations', '{:s}.json'.format(image_key)), 'r') as fid:
         anno = json.load(fid)
     return anno
 
@@ -17,15 +17,15 @@ def visualize_gt(image_key, anno, color='green', alpha=125, font=None):
     
     img_folder = 'train'
 
-    with open('splits/test.txt') as f:
+    with open('data/splits/test.txt') as f:
         if image_key in f.readlines():
             img_folder = 'test'
 
-    with open('splits/val.txt') as f:
+    with open('data/splits/val.txt') as f:
         if image_key in f.readlines():
             img_folder = 'val'
 
-    with Image.open(os.path.join(f'{img_folder}/images', f'{image_key}.jpg')) as img:
+    with Image.open(os.path.join(f'data/{img_folder}/images', f'{image_key}.jpg')) as img:
         img = img.convert('RGBA')
         img_draw = ImageDraw.Draw(img)
 
