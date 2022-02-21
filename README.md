@@ -1,3 +1,17 @@
+# Synthetic data project
+Synthetic data for traing deep neural networks for object detection on traffic signs.
+
+
+## Requirements
+Virtual environment and dependencies with `venv`:
+* Create environment `python3.9 -m venv -venv`
+* Activate:
+  * Unix/macOS: `source .venv/bin/activate`
+  * Windows: `.\.venv\Stripts\activate`
+* Install requirements: `pip install -r requirements_cpu.txt`
+
+
+
 # Mapillary Traffic Sign Dataset
 
 This is the Mapillary Traffic Sign Dataset (MTSD). It contains bounding-box annotations
