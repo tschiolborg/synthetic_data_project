@@ -3,54 +3,47 @@ Synthetic data for traing deep neural networks for object detection on traffic s
 
 
 ## Requirements
-Virtual environment and dependencies with `venv`:
-* Create environment `python3.9 -m venv -venv`
-* Activate:
-  * Unix/macOS: `source .venv/bin/activate`
-  * Windows: `.\.venv\Stripts\activate`
-* Install requirements: `pip install -r requirements_cpu.txt`
+Virtual environment and dependencies with `conda`:
+```bash
+conda create --name [name] python=3.9
+```
+
+Install requirements (in virtual environment): 
+```bash
+pip install -r requirements.txt
+```
 
 
 
 # Mapillary Traffic Sign Dataset
 
-This is the Mapillary Traffic Sign Dataset (MTSD). It contains bounding-box annotations
-for traffic sign detection and class labels for traffic sign classification.
+The Mapillary Traffic Sign Dataset (MTSD) contains bounding-box annotations for traffic sign detection and class labels for traffic sign classification.
 
-A detailed description of the dataset can be found in this technical report:
-    https://arxiv.org/abs/1909.04422
+Detailed descriptions: https://arxiv.org/abs/1909.04422
 
-# Demo Script
+### Demo Script
 
-This package includes a demo script to demonstrate how to load and show the annotations
-of MTSD. It's a python script and can be executed in a shell as follows:
-
-```
-python ./visualize_example.py
+For how to load and show images and annotations:
+```bash
+python visualize_example.py
 ```
 
-The python requirements for this script can be found in `requirements.txt`.
+## Data Format
 
-# Data Format
+3 directories:
 
-The dataset is stored in the following 3 directories.
+### Splits
 
-## Splits
+3 text files such that each file defines the split where each line corresponds to an image key, which corresponds to an image and an annotation. Example: `splits/train.txt`
 
-This directory contains text files defining the splits of the dataset. Each split is defined
-in a text file (eg. `splits/train.txt`) where each line corresponds to an image. The
-filenames of the corresponding image and annotation files are those keys.
+### Images
 
-## Images
+3 directories for each split containing the images.
+Example: `images/train/Bh36Ed4HBJatMpSNnFTgTw.jpg`
 
-This directory contains the image files with each filename corresponding to an image key.
-Example: `images/Bh36Ed4HBJatMpSNnFTgTw.jpg`
+### Annotations
 
-The image directory might be shipped in a separate ZIP package.
-
-## Annotations
-
-This directory contains the annotation files with each filename correspondign to an image key.
+Contains annotation files where each filename corresponds to an image key.
 Example: `annotations/Bh36Ed4HBJatMpSNnFTgTw.json`
 
 The annotations are stored as JSON with the following keys:
@@ -67,7 +60,6 @@ The annotations are stored as JSON with the following keys:
   - `label`: the class of the traffic sign
   - `properties`: a dictionary defining special properties of the sign.
 
-Please see the demo script for an example of how to load the annotations.
 
 ### Panorama handling
 
@@ -82,6 +74,7 @@ of the bounding box. In order to extract the full image crop of the traffic sign
 Example: `annotations/OENb8BfFyAocFzHHM4Mehg.json`
 
 ### Partially annotated set
+**Not a part of project**
 
 The partially annotated set additional includes correspondance information for each object in
 the `correspondance` dictionary:
