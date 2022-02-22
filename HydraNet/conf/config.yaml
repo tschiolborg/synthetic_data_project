@@ -1,15 +1,25 @@
 train:
-  epochs: 25
+  epochs: 10
   lr: 1e-3
   dataset: &dataset_anchor
-    img_dir: ${hydra:runtime.cwd}/../../data/TrafficsignDev/train/
-    anno_dir: ${hydra:runtime.cwd}/../../data/TrafficsignDev/annotations/
+    img_dir:  ${hydra:runtime.cwd}/data/images/train
+    anno_dir: ${hydra:runtime.cwd}/data/annotations
     classes: [ _, 'regulatory--stop--g1' ]
     use_single_annotation_file: false
     label_map: {_: 0, 'regulatory--stop--g1': 1}
   dataloader: &dataloader_anchor
     shuffle: true
     batch_size: 2
+    num_workers: 4
+  dataset_val: 
+    img_dir:  ${hydra:runtime.cwd}/data/images/val
+    anno_dir: ${hydra:runtime.cwd}/data/annotations
+    classes: [ _, 'regulatory--stop--g1' ]
+    use_single_annotation_file: false
+    label_map: {_: 0, 'regulatory--stop--g1': 1}
+  dataloader_val: 
+    shuffle: false
+    batch_size: 1
     num_workers: 4
 
 
@@ -19,6 +29,6 @@ dev:
 
 
 model:
-  name: yolo-v4
-  num_classes: 1
+  name: faster-rcnn
+  num_classes: 2
   weights: ???

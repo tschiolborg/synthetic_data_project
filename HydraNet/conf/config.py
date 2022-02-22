@@ -37,7 +37,8 @@ class TrainConfig:
     lr: float
     dataloader: DataloaderConfig
     dataset: DatasetConfig
-
+    dataloader_val: DataloaderConfig
+    dataset_val: DatasetConfig
 
 @dataclass
 class DevConfig:

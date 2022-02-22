@@ -1,6 +1,15 @@
 # Synthetic data project
 Synthetic data for traing deep neural networks for object detection on traffic signs.
 
+## Bugs and todos
+* `dataset.py` : `self.classes` cannot be of type `None`
+* I should remove the Panorama images
+* dtype in dataset
+* train, eval functions-file
+* train, eval should return something
+* add criterion?
+* load images as tensor
+
 
 ## Requirements
 Virtual environment and dependencies with `conda`:

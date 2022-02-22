@@ -27,7 +27,7 @@ def visualize_gt(image_key, anno, color="green", alpha=125, font=None):
         if image_key in f.readlines():
             img_folder = "val"
 
-    with Image.open(os.path.join(f"data/{img_folder}/images", f"{image_key}.jpg")) as img:
+    with Image.open(os.path.join(f"data/images/{img_folder}", f"{image_key}.jpg")) as img:
         img = img.convert("RGBA")
         img_draw = ImageDraw.Draw(img)
 
@@ -64,7 +64,7 @@ def visualize_gt(image_key, anno, color="green", alpha=125, font=None):
 
 
 if __name__ == "__main__":
-    image_key = "Bh36Ed4HBJatMpSNnFTgTw"
+    image_key = "OENb8BfFyAocFzHHM4Mehg"
 
     # load the annotation json
     anno = load_annotation(image_key)

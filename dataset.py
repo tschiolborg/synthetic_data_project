@@ -81,7 +81,7 @@ class ImageDatasetJson(Dataset):
                     boxes.append([box["xmin"], box["ymin"], box["xmax"], box["ymax"]])
 
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
-        labels = torch.as_tensor(labels, dtype=torch.int64)
+        labels = torch.as_tensor(labels, dtype=torch.int64) # must be of int64
 
         area = torchvision.ops.box_area(boxes)
 
@@ -104,6 +104,9 @@ class ImageDatasetJson(Dataset):
             img = sample["image"]
             targets["boxes"] = torch.Tensor(sample["bboxes"])
             targets["area"] = torchvision.ops.box_area(targets["boxes"])
+
+        else:
+            img = torch.as_tensor(img, dtype=torch.float32)
 
         return img, targets
 
@@ -141,64 +144,3 @@ class ImageDatasetJson(Dataset):
     def collate_fn(batch):
         return tuple(zip(*batch))
 
-
-'''
-class MapillaryDataset(torch.utils.data.Dataset):
-    def __init__(self, root, transforms, dataset_key, num_images):
-        """
-        dataset_key (string): "train", "test" or "val"
-        num_images (int): in range 1 to len(dataset)
-        """
-        assert dataset_key in dataset_keys
-        assert num_images > 0 and num_images <= dataset_sizes[dataset_key]
-
-        self.root = root
-        self.transforms = transforms
-        self.dataset_key = dataset_key
-        self.dataset = list(sorted(os.listdir(os.path.join(root, dataset_key, "images"))))[:num_images]
-
-    def __getitem__(self, idx):
-        # load images
-        image_key = self.dataset[idx]
-        img_path = os.path.join(self.root, self.dataset_key, "images", image_key)
-        
-        # find annotations
-        with open(os.path.join('data', 'annotations', f'{image_key[:-4]}.json'), 'r') as fid:
-            anno = json.load(fid)
-
-        with Image.open(img_path) as img:
-            img = img.convert("RGB")
-
-            # get bounding box coordinates
-            boxes = []
-            labels = []
-            for obj in anno['objects']:
-                xmin = obj['bbox']['xmin']
-                ymin = obj['bbox']['ymin']
-                xmax = obj['bbox']['xmax']
-                ymax = obj['bbox']['ymax']
-                boxes.append([xmin, ymin, xmax, ymax])
-                labels.append(labelToNum[obj['label']])
-
-            # convert everything into a torch.Tensor
-            boxes = torch.as_tensor(boxes, dtype=torch.float32)
-            labels = torch.as_tensor(labels, dtype=torch.int64)
-            image_id = torch.tensor([idx])
-            area = (boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
-
-            target = {}
-            target["boxes"] = boxes
-            target["labels"] = labels
-            target["image_id"] = image_id
-            target["area"] = area
-
-        if self.transforms:
-            img, target = self.transforms(img, target)
-
-        return img, target
-
-    def __len__(self):
-        return len(self.dataset)
-
-myDataset = MapillaryDataset(root="data", transforms=None, dataset_key="train", num_images=1000)
-'''
