@@ -1,8 +1,10 @@
-from HydraNet.conf.config import MLConfig
 import logging
+
 import hydra
-import torchvision
 import torch
+import torchvision
+
+from HydraNet.conf.config import MLConfig
 
 log = logging.getLogger(__name__)
 
@@ -16,5 +18,5 @@ def main(cfg: MLConfig):
     resnet = torchvision.models.resnet50(pretrained=True)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
