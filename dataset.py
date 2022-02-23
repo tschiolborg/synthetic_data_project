@@ -65,7 +65,9 @@ class ImageDatasetJson(Dataset):
         img = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB).astype(np.float32)
         img /= 255
 
-        anno_path = os.path.join(self.anno_dir, f"{self.__get_annotation_id_(idx)}.json")
+        anno_path = os.path.join(
+            self.anno_dir, f"{self.__get_annotation_id_(idx)}.json"
+        )
 
         boxes = []
         labels = []
@@ -81,7 +83,7 @@ class ImageDatasetJson(Dataset):
                     boxes.append([box["xmin"], box["ymin"], box["xmax"], box["ymax"]])
 
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
-        labels = torch.as_tensor(labels, dtype=torch.int64) # must be of int64
+        labels = torch.as_tensor(labels, dtype=torch.int64)  # must be of int64
 
         area = torchvision.ops.box_area(boxes)
 
@@ -99,7 +101,9 @@ class ImageDatasetJson(Dataset):
             while len(sample["bboxes"]) == 0:
                 # retry until the bbox is acceptable
                 self.log.info("Retrying target transforms.")
-                sample = self.transform(image=img, bboxes=targets["boxes"], labels=labels)
+                sample = self.transform(
+                    image=img, bboxes=targets["boxes"], labels=labels
+                )
 
             img = sample["image"]
             targets["boxes"] = torch.Tensor(sample["bboxes"])
@@ -143,4 +147,3 @@ class ImageDatasetJson(Dataset):
     @staticmethod
     def collate_fn(batch):
         return tuple(zip(*batch))
-

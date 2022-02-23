@@ -40,6 +40,7 @@ class TrainConfig:
     dataloader_val: DataloaderConfig
     dataset_val: DatasetConfig
 
+
 @dataclass
 class DevConfig:
     dataset: DatasetConfig

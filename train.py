@@ -18,12 +18,12 @@ log = logging.getLogger(__name__)
 
 @hydra.main(config_path="HydraNet/conf", config_name="config.yaml")
 def train(cfg: PipelineConfig):
-    '''
+    """
     Train
-    '''
+    """
 
-    #log.info("Running main.py")
-    #print(cfg.train.path)
+    # log.info("Running main.py")
+    # print(cfg.train.path)
 
     cfg_model = cfg.model
     cfg_dataset = cfg.train.dataset
@@ -31,30 +31,38 @@ def train(cfg: PipelineConfig):
     cfg_dataset_val = cfg.train.dataset
     cfg_dataloder_val = cfg.train.dataloader
 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f'Using {device}')
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using {device}")
 
     num_classes = cfg.model.num_classes
 
     # use dataset with transformations
     dataset = ImageDatasetJson(cfg=cfg_dataset, transform=get_transform(train=True))
-    dataset_val = ImageDatasetJson(cfg=cfg_dataset_val, transform=get_transform(train=False))
+    dataset_val = ImageDatasetJson(
+        cfg=cfg_dataset_val, transform=get_transform(train=False)
+    )
 
-    print(f'Size of training data: {len(dataset)}')
-    print(f'Size of validation data: {len(dataset_val)}')
-    
+    print(f"Size of training data: {len(dataset)}")
+    print(f"Size of validation data: {len(dataset_val)}")
+
     # define data loaders
     # TODO: create class wrt config
     data_loader = torch.utils.data.DataLoader(
-        dataset, batch_size=2, shuffle=True, num_workers=4,
-        collate_fn=ImageDatasetJson.collate_fn
+        dataset,
+        batch_size=2,
+        shuffle=True,
+        num_workers=4,
+        collate_fn=ImageDatasetJson.collate_fn,
     )
     data_loader_test = torch.utils.data.DataLoader(
-        dataset_val, batch_size=1, shuffle=False, num_workers=4,
-        collate_fn=ImageDatasetJson.collate_fn
+        dataset_val,
+        batch_size=1,
+        shuffle=False,
+        num_workers=4,
+        collate_fn=ImageDatasetJson.collate_fn,
     )
 
-    # load model pre-trained on coco 
+    # load model pre-trained on coco
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
 
     # get number of input features for the classifier
@@ -67,7 +75,7 @@ def train(cfg: PipelineConfig):
     params = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.SGD(params, lr=0.005, momentum=0.9, weight_decay=0.0005)
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
-    
+
     num_epochs = 2
 
     for epoch in range(num_epochs):
@@ -76,20 +84,18 @@ def train(cfg: PipelineConfig):
         # update the learning rate
         lr_scheduler.step()
         # evaluate on the test dataset
-        #evaluate(model, data_loader_test, device=device)
-    
-    print('Done')
+        # evaluate(model, data_loader_test, device=device)
+
+    print("Done")
 
 
-
-
-
-
-def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200, scaler=None):
-    '''
+def train_one_epoch(
+    model, optimizer, data_loader, device, epoch, print_freq=200, scaler=None
+):
+    """
     Train one epoch
     dont know if scaler works
-    '''
+    """
     model.train()
     model = model.to(device)
 
@@ -102,7 +108,9 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200
             optimizer, start_factor=warmup_factor, total_iters=warmup_iters
         )
 
-    for idx, (images, targets) in enumerate(tqdm(data_loader, desc=f'Epoch [{epoch+1}]')):
+    for idx, (images, targets) in enumerate(
+        tqdm(data_loader, desc=f"Epoch [{epoch+1}]")
+    ):
         # to device
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
@@ -132,28 +140,24 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200
 
         # change to log
         if idx % print_freq == 0:
-            print(f'Loss: {losses}')
-
-
-
+            print(f"Loss: {losses}")
 
 
 @torch.inference_mode()
 def evaluate(model, data_loader, device):
-    '''
+    """
     Evalue
-    '''
+    """
     model.eval()
 
-    for idx, (images, targets) in enumerate(tqdm(data_loader, desc='Evaluating')):
+    for idx, (images, targets) in enumerate(tqdm(data_loader, desc="Evaluating")):
         # to device
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
         outputs = model(images)
 
-        #TODO
-
+        # TODO
 
 
 if __name__ == "__main__":

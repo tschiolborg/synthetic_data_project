@@ -5,15 +5,15 @@ __all__ = ["get_transform"]
 
 
 def get_transform(train):
-    '''
+    """
     Transformation
-    '''
+    """
 
     if train:
         return A.Compose(
             [
                 A.RandomSizedBBoxSafeCrop(width=640, height=640),
-                #A.HorizontalFlip(0.5),
+                # A.HorizontalFlip(0.5),
                 # ToTensorV2 converts image to pytorch tensor without div by 255
                 ToTensorV2(p=1.0),
             ],

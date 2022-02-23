@@ -5,7 +5,9 @@ from PIL import Image, ImageColor, ImageDraw, ImageFont
 
 
 def load_annotation(image_key):
-    with open(os.path.join("data/annotations", "{:s}.json".format(image_key)), "r") as fid:
+    with open(
+        os.path.join("data/annotations", "{:s}.json".format(image_key)), "r"
+    ) as fid:
         anno = json.load(fid)
     return anno
 
@@ -27,7 +29,9 @@ def visualize_gt(image_key, anno, color="green", alpha=125, font=None):
         if image_key in f.readlines():
             img_folder = "val"
 
-    with Image.open(os.path.join(f"data/images/{img_folder}", f"{image_key}.jpg")) as img:
+    with Image.open(
+        os.path.join(f"data/images/{img_folder}", f"{image_key}.jpg")
+    ) as img:
         img = img.convert("RGBA")
         img_draw = ImageDraw.Draw(img)
 
