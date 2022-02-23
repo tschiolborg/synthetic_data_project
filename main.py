@@ -51,7 +51,6 @@ def main(cfg: PipelineConfig):
 
     # load model pre-trained on coco 
     model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=True)
-    model = model.to(device)
 
     # get number of input features for the classifier
     in_features = model.roi_heads.box_predictor.cls_score.in_features
@@ -86,6 +85,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200
     dont know if scaler works
     '''
     model.train()
+    model = model.to(device)
 
     lr_scheduler = None
     if epoch == 0:
@@ -100,12 +100,6 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200
         # to device
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
-        for image in images:
-            print(image.device)
-        for t in targets:
-            for k,v in t.items():
-                print(k, v.device)
-        print(model.device)
 
         # loss
         with torch.cuda.amp.autocast(enabled=scaler is not None):

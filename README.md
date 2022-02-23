@@ -3,12 +3,22 @@ Synthetic data for traing deep neural networks for object detection on traffic s
 
 ## Bugs and todos
 * `dataset.py` : `self.classes` cannot be of type `None`
+* TODO: Eval
+* dataloader class
+* hydra management
+* wandb?
 * I should remove the Panorama images
 * dtype in dataset
 * train, eval functions-file
 * train, eval should return something
 * add criterion?
 * load images as tensor
+* fix tqdm
+* fix warning:
+```
+:\Users\saibo\anaconda3\envs\BA\lib\site-packages\torch\functional.py:445: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at  ..\aten\src\ATen\native\TensorShape.cpp:2157.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+```
 
 
 ## Requirements
