@@ -1,9 +1,14 @@
-### own
-data
-*.example
-outputs
+### Define your own
+outputs/
 
 
+### Lightning-Hydra-Template
+configs/local/default.yaml
+data/
+logs/
+wandb/
+.env
+.autoenv
 
 
 
