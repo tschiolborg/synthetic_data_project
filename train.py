@@ -17,7 +17,10 @@ log = logging.getLogger(__name__)
 
 
 @hydra.main(config_path="HydraNet/conf", config_name="config.yaml")
-def main(cfg: PipelineConfig):
+def train(cfg: PipelineConfig):
+    '''
+    Train
+    '''
 
     #log.info("Running main.py")
     #print(cfg.train.path)
@@ -28,7 +31,7 @@ def main(cfg: PipelineConfig):
     cfg_dataset_val = cfg.train.dataset
     cfg_dataloder_val = cfg.train.dataloader
 
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Using {device}')
 
     num_classes = cfg.model.num_classes
@@ -37,6 +40,8 @@ def main(cfg: PipelineConfig):
     dataset = ImageDatasetJson(cfg=cfg_dataset, transform=get_transform(train=True))
     dataset_val = ImageDatasetJson(cfg=cfg_dataset_val, transform=get_transform(train=False))
 
+    print(f'Size of training data: {len(dataset)}')
+    print(f'Size of validation data: {len(dataset_val)}')
     
     # define data loaders
     # TODO: create class wrt config
@@ -82,6 +87,7 @@ def main(cfg: PipelineConfig):
 
 def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200, scaler=None):
     '''
+    Train one epoch
     dont know if scaler works
     '''
     model.train()
@@ -96,7 +102,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200
             optimizer, start_factor=warmup_factor, total_iters=warmup_iters
         )
 
-    for idx, (images, targets) in enumerate(tqdm(data_loader, desc=f'Training epoch [{epoch+1}]')):
+    for idx, (images, targets) in enumerate(tqdm(data_loader, desc=f'Epoch [{epoch+1}]')):
         # to device
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
@@ -124,6 +130,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200
         if lr_scheduler is not None:
             lr_scheduler.step()
 
+        # change to log
         if idx % print_freq == 0:
             print(f'Loss: {losses}')
 
@@ -134,7 +141,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200
 @torch.inference_mode()
 def evaluate(model, data_loader, device):
     '''
-    yay
+    Evalue
     '''
     model.eval()
 
@@ -150,4 +157,4 @@ def evaluate(model, data_loader, device):
 
 
 if __name__ == "__main__":
-    main()
+    train()
