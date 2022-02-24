@@ -6,7 +6,7 @@ from PIL import Image, ImageColor, ImageDraw, ImageFont
 
 def load_annotation(image_key):
     with open(
-        os.path.join("data/annotations", "{:s}.json".format(image_key)), "r"
+        os.path.join("/../../data/annotations", "{:s}.json".format(image_key)), "r"
     ) as fid:
         anno = json.load(fid)
     return anno
