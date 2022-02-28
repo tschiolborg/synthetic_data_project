@@ -7,7 +7,7 @@ from torchvision.datasets import MNIST
 from torchvision.transforms import transforms
 
 
-class MNISTDataModule(LightningDataModule):
+class MTSDDataModule(LightningDataModule):
     """
     Example of LightningDataModule for MNIST dataset.
 
