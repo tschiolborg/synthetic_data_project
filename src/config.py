@@ -13,30 +13,22 @@ class DatasetConfig:
 
 @dataclass
 class DatamoduleConfig:
+    dataset: DatasetConfig
     shuffle: bool
     batch_size: int
     num_workers: int
 
 
 @dataclass
-class BackboneConfig:
-    name: str
-    fpn_compatible: bool
-
-
-@dataclass
 class ModelConfig:
-    name: str
     num_classes: int
-    weights: str
+    lr: float
 
 
 @dataclass
 class TrainerConfig:
-    min_epochs: int
-    max_epochs: int
-    lr: float
     gpus: int
+    max_epochs: int
 
 
 @dataclass

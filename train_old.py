@@ -10,7 +10,7 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
 from HydraNet.conf.config import PipelineConfig
 
-from dataset import ImageDatasetJson
+from src.datamodules.datasets.mtsd_dataset import ImageDatasetJson
 from transforms import get_transform
 
 log = logging.getLogger(__name__)
