@@ -10,7 +10,7 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 
 from HydraNet.conf.config import PipelineConfig
 
-from src.datamodules.datasets.mtsd_dataset import ImageDatasetJson
+from dataset import MtsdDataset
 from transforms import get_transform
 
 log = logging.getLogger(__name__)
@@ -37,8 +37,8 @@ def train(cfg: PipelineConfig):
     num_classes = cfg.model.num_classes
 
     # use dataset with transformations
-    dataset = ImageDatasetJson(cfg=cfg_dataset, transform=get_transform(train=True))
-    dataset_val = ImageDatasetJson(
+    dataset = MtsdDataset(cfg=cfg_dataset, transform=get_transform(train=True))
+    dataset_val = MtsdDataset(
         cfg=cfg_dataset_val, transform=get_transform(train=False)
     )
 
@@ -52,14 +52,14 @@ def train(cfg: PipelineConfig):
         batch_size=2,
         shuffle=True,
         num_workers=4,
-        collate_fn=ImageDatasetJson.collate_fn,
+        collate_fn=MtsdDataset.collate_fn,
     )
     data_loader_test = torch.utils.data.DataLoader(
         dataset_val,
         batch_size=1,
         shuffle=False,
         num_workers=4,
-        collate_fn=ImageDatasetJson.collate_fn,
+        collate_fn=MtsdDataset.collate_fn,
     )
 
     # load model pre-trained on coco
