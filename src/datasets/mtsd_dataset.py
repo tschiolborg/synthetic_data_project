@@ -2,60 +2,46 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import cv2
 import numpy as np
 import torch
 import torchvision
 from torch.utils.data import Dataset
-
-from HydraNet.conf.config import DatasetConfig
+from albumentations.core.composition import Compose
 
 
 class MtsdDataset(Dataset):
-    """
-    Dataset that can load from one or multiple annotation files. It is possible to specify which classes to load.
-    """
-
     def __init__(
         self,
-        cfg: DatasetConfig,
-        extension: str = ".jpg",
-        transform: Optional[Callable] = None,
-        target_transform: Optional[Callable] = None,
+        image_ids: List,
+        img_path: str,
+        anno_path: str,
+        classes: Optional[Dict[str, int]] = None,
+        transforms: Optional[Compose] = None,
+        mode: str = "",
     ):
         """
         Initialize the (lazy-loader) dataloader.
         Args:
-            cfg.img_path: string path to image folder.
-            cfg.anno_path: string path to annotation folder.
-            cfg.classes: list of strings with class labels that should be loaded. `None` will load all classes.
-            cfg.use_single_annotation_file: indicates whether annotations are stored in one or multiple files.
-            cfg.label_map: dictionary mapping from class label to int.
-            extension: image file extension.
-            transform: optional callable that transforms the input images.
-            target_transform: optional callable that transforms the input annotations.
+            image_ids: list of ids to images
+            img_path: path to images
+            anno_path: path to annotation directory
+            classes: dictionary mapping classes to integer label
+            transforms: albumentations
+            mode: train/val/test
         """
-        self.cfg = cfg
-        self.anno_dir = cfg.anno_dir
-        self.img_dir = cfg.img_dir
-        self.classes = cfg.classes
-        self.label_map = cfg.label_map
-        self.extension = extension
-        self.img_ids = [
-            Path(file).stem
-            for file in os.listdir(self.img_dir)
-            if Path(file).suffix == self.extension
-        ]
-        if not self.cfg.use_single_annotation_file:
-            self.img_ids = self.__filter_ids_for_training_(self.img_ids)
-
-        self.transform = transform
-        self.log = logging.getLogger(__name__)
+        self.image_ids = image_ids
+        self.img_path = img_path
+        self.anno_path = anno_path
+        self.classes = classes
+        self.transform = transforms
+        self.mode = mode
+        self.num_classes = len(classes) if classes is not None else -1 # -1 for all classes
 
     def __len__(self):
-        return len(self.img_ids)
+        return len(self.images)
 
     def __getitem__(self, idx):
         img_path = os.path.join(self.img_dir, f"{self.img_ids[idx]}{self.extension}")
@@ -63,9 +49,7 @@ class MtsdDataset(Dataset):
         img = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB).astype(np.float32)
         img /= 255
 
-        anno_path = os.path.join(
-            self.anno_dir, f"{self.__get_annotation_id_(idx)}.json"
-        )
+        anno_path = os.path.join(self.anno_path, f"{self.__get_annotation_id_(idx)}.json")
 
         boxes = []
         labels = []
@@ -99,9 +83,7 @@ class MtsdDataset(Dataset):
             while len(sample["bboxes"]) == 0:
                 # retry until the bbox is acceptable
                 self.log.info("Retrying target transforms.")
-                sample = self.transform(
-                    image=img, bboxes=targets["boxes"], labels=labels
-                )
+                sample = self.transform(image=img, bboxes=targets["boxes"], labels=labels)
 
             img = sample["image"]
             targets["boxes"] = torch.Tensor(sample["bboxes"])
@@ -133,7 +115,7 @@ class MtsdDataset(Dataset):
         filtered_ids: List[str] = []
 
         for _id in ids:
-            anno_path = os.path.join(self.anno_dir, f"{_id}.json")
+            anno_path = os.path.join(self.anno_path, f"{_id}.json")
             with open(anno_path) as f:
                 anno = json.load(f)
                 for _obj in anno["objects"]:
