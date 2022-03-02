@@ -8,7 +8,6 @@ from torchvision.transforms import transforms
 from datasets import MtsdDataset
 from src.config import DatamoduleConfig
 
-
 __all__ = ["MtsdDataModule"]
 
 

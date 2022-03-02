@@ -2,15 +2,14 @@ import logging
 import math
 import sys
 
-from tqdm import tqdm
 import hydra
 import torch
 import torchvision
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
-
-from HydraNet.conf.config import PipelineConfig
+from tqdm import tqdm
 
 from dataset import MtsdDataset
+from HydraNet.conf.config import PipelineConfig
 from transforms import get_transform
 
 log = logging.getLogger(__name__)
