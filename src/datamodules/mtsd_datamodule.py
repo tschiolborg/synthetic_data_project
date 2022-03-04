@@ -24,81 +24,83 @@ class MtsdDataModule(LightningDataModule):
 
     def setup(self, stage: Optional[str] = None):
 
-        with open(os.path.join(self.cfg.datamodule.classes_dir)) as f:
+        with open(os.path.join(self.cfg.datamodule.classes_path)) as f:
             self.classes = json.load(f)
 
         self.num_classes = len(self.classes)
 
-        train_images = [file for file in os.listdir(self.cfg.datamodule.train.path)]
-        val_images = [file for file in os.listdir(self.cfg.datamodule.val.path)]
-        test_images = [file for file in os.listdir(self.cfg.datamodule.test.path)]
-
-        if not self.cfg.datamodule.include_negative_examples:
-            for images in (train_images, val_images, test_images):
-                images = [id for id in images if self._filter_id(id)]
-
-        if self.cfg.training.debug:
-            for images in (train_images, val_images, test_images):
-                images = images[:1000]
-
-        self.train_dataset = MyDataset(
-            image_ids=train_images,
-            img_path=self.cfg.datamodule.train.path,
-            anno_path=self.cfg.datamodule.anno_path,
-            classes=self.classes,
-            transforms=self.cfg.datamodule.train.transforms,
-            mode="train",
+        self.train_dataset = (
+            self._setup_dataset(self.cfg.datamodule.train) if self.cfg.datamodule.train else None
         )
 
-        self.val_dataset = MyDataset(
-            image_ids=val_images,
-            img_path=self.cfg.datamodule.val.path,
-            anno_path=self.cfg.datamodule.anno_path,
-            classes=self.classes,
-            transforms=self.cfg.datamodule.val.transforms,
-            mode="val",
+        self.val_dataset = (
+            self._setup_dataset(self.cfg.datamodule.val) if self.cfg.datamodule.val else None
         )
 
-        self.test_dataset = MyDataset(
-            image_ids=test_images,
-            img_path=self.cfg.datamodule.test.path,
-            anno_path=self.cfg.datamodule.anno_path,
-            classes=self.classes,
-            transforms=self.cfg.datamodule.test.transforms,
-            mode="test",
+        self.test_dataset = (
+            self._setup_dataset(self.cfg.datamodule.test) if self.cfg.datamodule.test else None
         )
 
     def train_dataloader(self):
-        return DataLoader(
-            dataset=self.train_dataset,
-            batch_size=self.cfg.datamodule.train.batch_size,
-            num_workers=self.cfg.datamodule.train.num_workers,
-            pin_memory=self.cfg.datamodule.train.pin_memory,
-            shuffle=True,
-            collate_fn=None,
-            drop_last=False,
+        return (
+            DataLoader(
+                dataset=self.train_dataset,
+                batch_size=self.cfg.datamodule.train.batch_size,
+                num_workers=self.cfg.datamodule.train.num_workers,
+                pin_memory=self.cfg.datamodule.train.pin_memory,
+                shuffle=True,
+                collate_fn=None,
+                drop_last=False,
+            )
+            if self.train_dataset is not None
+            else None
         )
 
     def val_dataloader(self):
-        return DataLoader(
-            dataset=self.val_dataset,
-            batch_size=self.cfg.datamodule.train.batch_size,
-            num_workers=self.cfg.datamodule.train.num_workers,
-            pin_memory=self.cfg.datamodule.train.pin_memory,
-            shuffle=False,
-            collate_fn=None,
-            drop_last=False,
+        return (
+            DataLoader(
+                dataset=self.val_dataset,
+                batch_size=self.cfg.datamodule.val.batch_size,
+                num_workers=self.cfg.datamodule.val.num_workers,
+                pin_memory=self.cfg.datamodule.val.pin_memory,
+                shuffle=False,
+                collate_fn=None,
+                drop_last=False,
+            )
+            if self.val_dataset is not None
+            else None
         )
 
     def test_dataloader(self):
-        return DataLoader(
-            dataset=self.test_dataset,
-            batch_size=self.cfg.datamodule.train.batch_size,
-            num_workers=self.cfg.datamodule.train.num_workers,
-            pin_memory=self.cfg.datamodule.train.pin_memory,
-            shuffle=False,
-            collate_fn=None,
-            drop_last=False,
+        return (
+            DataLoader(
+                dataset=self.test_dataset,
+                batch_size=self.cfg.datamodule.test.batch_size,
+                num_workers=self.cfg.datamodule.test.num_workers,
+                pin_memory=self.cfg.datamodule.test.pin_memory,
+                shuffle=False,
+                collate_fn=None,
+                drop_last=False,
+            )
+            if self.test_dataset is not None
+            else None
+        )
+
+    def _setup_dataset(self, cfg_dataset):
+        images = [file for file in os.listdir(cfg_dataset.path)]
+
+        if not self.cfg.datamodule.include_negative_examples:
+            images = [id for id in images if self._filter_id(id)]
+
+        if self.cfg.training.debug:
+            images = images[:1000]
+
+        return MyDataset(
+            image_ids=images,
+            img_path=cfg_dataset.path,
+            anno_path=self.cfg.datamodule.anno_path,
+            classes=self.classes,
+            transforms=cfg_dataset.transforms,
         )
 
     def _filter_id(self, id):

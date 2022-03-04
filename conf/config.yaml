@@ -1,0 +1,20 @@
+datamodule:
+  train:
+    path: data/images/train
+    batch_size: 1
+    num_workers: 0
+    pin_memory:
+    transforms:
+  val:
+    path: data/images/val
+    batch_size: 1
+    num_workers: 0
+    pin_memory:
+    transforms:
+  test:
+  anno_path: data/annotations
+  classes_path: data/classes/classes.json
+  include_negative_examples: true
+
+training:
+  debug: false
