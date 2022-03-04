@@ -44,3 +44,5 @@ if __name__ == "__main__":
     # Compute the results
     result = metric.compute()
     print(result)
+
+    print(target)

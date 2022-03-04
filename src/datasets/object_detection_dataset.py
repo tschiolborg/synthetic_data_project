@@ -10,6 +10,7 @@ import torch
 import torchvision
 from torch.utils.data import Dataset
 from albumentations.core.composition import Compose
+from transforms import get_transform
 
 
 class ObjectDetectionDataset(Dataset):
@@ -40,19 +41,21 @@ class ObjectDetectionDataset(Dataset):
         self.image_dir = image_dir
         self.anno_dir = anno_dir
         self.classes = classes
-        self.transform = transforms
+        self.transforms = get_transform(True)
         self.num_classes = len(classes) if classes is not None else -1  # -1 for all classes
 
     def __len__(self):
         return len(self.image_ids)
 
-    def __getitem__(self, idx):
-        image_path = os.path.join(self.image_dir, self.image_ids[idx])
+    def _load_image(self, id):
+        image_path = os.path.join(self.image_dir, id)
         image = cv2.imread(image_path)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB).astype(np.float32)
         image /= 255
+        return image
 
-        anno_dir = os.path.join(self.anno_dir, f"{Path(self.image_ids[idx]).stem}.json")
+    def _load_target(self, id):
+        anno_dir = os.path.join(self.anno_dir, f"{Path(id).stem}.json")
 
         boxes = []
         labels = []
@@ -75,27 +78,37 @@ class ObjectDetectionDataset(Dataset):
             "boxes": boxes,
             "labels": labels,
             "area": area,
-            "image_id": torch.tensor([idx]),
         }
+        return target
 
-        if self.transform is not None:
+    def __getitem__(self, idx):
+        id = self.image_ids[idx]
+        image = self._load_image(id)
+        target = self._load_target(id)
 
-            sample = self.transform(image=image, bboxes=target["boxes"], labels=labels)
+        if self.transforms is not None:
+            # but this in transforms:
+            # image, target = self.transforms(image, target)
+
+            sample = self.transforms(image=image, bboxes=target["boxes"], labels=target["labels"])
 
             while len(sample["bboxes"]) == 0:
                 # retry until the bbox is acceptable
                 # self.log.info("Retrying target transforms.")
-                sample = self.transform(image=image, bboxes=target["boxes"], labels=labels)
+                sample = self.transforms(
+                    image=image, bboxes=target["boxes"], labels=target["labels"]
+                )
 
             image = sample["image"]
             target["boxes"] = torch.Tensor(sample["bboxes"])
             target["area"] = torchvision.ops.box_area(target["boxes"])
 
         else:
+            ## change this to albuementations
             image = torch.as_tensor(image, dtype=torch.float32)
 
         return image, target
 
-    # @staticmethod
-    # def collate_fn(batch):
-    #    return tuple(zip(*batch))
+    def collate_fn(self, batch):
+        images, targets = tuple(zip(*batch))
+        return (images if self.transforms is None else torch.stack(images)), targets

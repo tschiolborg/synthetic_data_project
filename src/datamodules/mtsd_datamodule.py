@@ -49,7 +49,7 @@ class MtsdDataModule(LightningDataModule):
                 num_workers=self.cfg.datamodule.train.num_workers,
                 pin_memory=self.cfg.datamodule.train.pin_memory,
                 shuffle=True,
-                collate_fn=None,
+                collate_fn=self.train_dataset.collate_fn,
                 drop_last=False,
             )
             if self.train_dataset is not None
@@ -64,7 +64,7 @@ class MtsdDataModule(LightningDataModule):
                 num_workers=self.cfg.datamodule.val.num_workers,
                 pin_memory=self.cfg.datamodule.val.pin_memory,
                 shuffle=False,
-                collate_fn=None,
+                collate_fn=self.train_dataset.collate_fn,
                 drop_last=False,
             )
             if self.val_dataset is not None
@@ -79,7 +79,7 @@ class MtsdDataModule(LightningDataModule):
                 num_workers=self.cfg.datamodule.test.num_workers,
                 pin_memory=self.cfg.datamodule.test.pin_memory,
                 shuffle=False,
-                collate_fn=None,
+                collate_fn=self.train_dataset.collate_fn,
                 drop_last=False,
             )
             if self.test_dataset is not None
@@ -87,7 +87,7 @@ class MtsdDataModule(LightningDataModule):
         )
 
     def _setup_dataset(self, cfg_dataset):
-        images = [file for file in os.listdir(cfg_dataset.path)]
+        images = [file for file in os.listdir(cfg_dataset.dir)]
 
         if not self.cfg.datamodule.include_negative_examples:
             images = [id for id in images if self._filter_id(id)]
@@ -97,14 +97,14 @@ class MtsdDataModule(LightningDataModule):
 
         return MyDataset(
             image_ids=images,
-            img_path=cfg_dataset.path,
-            anno_path=self.cfg.datamodule.anno_path,
+            image_dir=cfg_dataset.dir,
+            anno_dir=self.cfg.datamodule.anno_dir,
             classes=self.classes,
             transforms=cfg_dataset.transforms,
         )
 
     def _filter_id(self, id):
-        anno_path = os.path.join(self.cfg.datamodule.anno_path, f"{Path(id).stem}.json")
+        anno_path = os.path.join(self.cfg.datamodule.anno_dir, f"{Path(id).stem}.json")
         with open(anno_path) as f:
             anno = json.load(f)
             for obj in anno["objects"]:
