@@ -6,9 +6,8 @@ import json
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
 
-from src.datasets import MtsdDataset
+from src.datasets import ObjectDetectionDataset as MyDataset
 from omegaconf import DictConfig
-
 
 
 class MtsdDataModule(LightningDataModule):
@@ -42,7 +41,7 @@ class MtsdDataModule(LightningDataModule):
             for images in (train_images, val_images, test_images):
                 images = images[:1000]
 
-        self.train_dataset = MtsdDataset(
+        self.train_dataset = MyDataset(
             image_ids=train_images,
             img_path=self.cfg.datamodule.train.path,
             anno_path=self.cfg.datamodule.anno_path,
@@ -51,7 +50,7 @@ class MtsdDataModule(LightningDataModule):
             mode="train",
         )
 
-        self.val_dataset = MtsdDataset(
+        self.val_dataset = MyDataset(
             image_ids=val_images,
             img_path=self.cfg.datamodule.val.path,
             img_path=self.cfg.datamodule.train.path,
@@ -61,7 +60,7 @@ class MtsdDataModule(LightningDataModule):
             mode="val",
         )
 
-        self.test_dataset = MtsdDataset(
+        self.test_dataset = MyDataset(
             image_ids=test_images,
             img_path=self.cfg.datamodule.test.path,
             img_path=self.cfg.datamodule.train.path,

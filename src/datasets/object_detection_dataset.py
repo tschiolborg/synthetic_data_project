@@ -12,7 +12,7 @@ from torch.utils.data import Dataset
 from albumentations.core.composition import Compose
 
 
-class ImageDetectionDataset(Dataset):
+class ObjectDetectionDataset(Dataset):
     def __init__(
         self,
         image_ids: List,
@@ -23,7 +23,7 @@ class ImageDetectionDataset(Dataset):
         mode: str = "",
     ):
         """
-        Initialize the (lazy-loader) dataloader.
+        Dataset for object detection 
         Args:
             image_ids: list of ids to images
             img_path: path to images
