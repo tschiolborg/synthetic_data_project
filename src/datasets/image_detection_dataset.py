@@ -12,7 +12,7 @@ from torch.utils.data import Dataset
 from albumentations.core.composition import Compose
 
 
-class MtsdDataset(Dataset):
+class ImageDetectionDataset(Dataset):
     def __init__(
         self,
         image_ids: List,
@@ -38,7 +38,7 @@ class MtsdDataset(Dataset):
         self.classes = classes
         self.transform = transforms
         self.mode = mode
-        self.num_classes = len(classes) if classes is not None else -1 # -1 for all classes
+        self.num_classes = len(classes) if classes is not None else -1  # -1 for all classes
 
     def __len__(self):
         return len(self.images)

@@ -9,16 +9,12 @@ from torch.utils.data import DataLoader, Dataset
 from src.datasets import MtsdDataset
 from omegaconf import DictConfig
 
-__all__ = ["MtsdDataModule"]
 
 
 class MtsdDataModule(LightningDataModule):
     def __init__(self, cfg: DictConfig):
         super().__init__()
         self.cfg = cfg
-
-        # this line allows to access init params with 'self.hparams' attribute
-        # self.save_hyperparameters(logger=False)
 
         self.train_dataset: Optional[Dataset] = None
         self.val_dataset: Optional[Dataset] = None
