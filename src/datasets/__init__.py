@@ -1,3 +1,3 @@
-from .image_detection_dataset import ImageDetectionDataset
+from .object_detection_dataset import ObjectDetectionDataset
 
-__all__ = ["ImageDetectionDataset"]
+__all__ = ["ObjectDetectionDataset"]
