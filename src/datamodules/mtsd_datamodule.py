@@ -29,13 +29,13 @@ class MtsdDataModule(LightningDataModule):
 
         self.num_classes = len(self.classes)
 
-        train_images = [Path(file).stem for file in os.listdir(self.cfg.datamodule.train.path)]
-        val_images = [Path(file).stem for file in os.listdir(self.cfg.datamodule.val.path)]
-        test_images = [Path(file).stem for file in os.listdir(self.cfg.datamodule.test.path)]
+        train_images = [file for file in os.listdir(self.cfg.datamodule.train.path)]
+        val_images = [file for file in os.listdir(self.cfg.datamodule.val.path)]
+        test_images = [file for file in os.listdir(self.cfg.datamodule.test.path)]
 
         if not self.cfg.datamodule.include_negative_examples:
             for images in (train_images, val_images, test_images):
-                images = self.__filter_ids_for_training_(images)
+                images = [id for id in images if self._filter_id(id)]
 
         if self.cfg.training.debug:
             for images in (train_images, val_images, test_images):
@@ -53,7 +53,6 @@ class MtsdDataModule(LightningDataModule):
         self.val_dataset = MyDataset(
             image_ids=val_images,
             img_path=self.cfg.datamodule.val.path,
-            img_path=self.cfg.datamodule.train.path,
             anno_path=self.cfg.datamodule.anno_path,
             classes=self.classes,
             transforms=self.cfg.datamodule.val.transforms,
@@ -63,7 +62,6 @@ class MtsdDataModule(LightningDataModule):
         self.test_dataset = MyDataset(
             image_ids=test_images,
             img_path=self.cfg.datamodule.test.path,
-            img_path=self.cfg.datamodule.train.path,
             anno_path=self.cfg.datamodule.anno_path,
             classes=self.classes,
             transforms=self.cfg.datamodule.test.transforms,
@@ -103,19 +101,11 @@ class MtsdDataModule(LightningDataModule):
             drop_last=False,
         )
 
-    def __filter_ids_for_training_(self, ids):
-        """
-        This function checks which image examples contain the classes we desire to detect.
-        This function should only be used when the annotations are stored in multiple files.
-        """
-        filtered_ids = []
-
-        for _id in ids:
-            anno_path = os.path.join(self.cfg.datamodule.anno_path, f"{_id}.json")
-            with open(anno_path) as f:
-                anno = json.load(f)
-                for _obj in anno["objects"]:
-                    if _obj["label"] in self.classes:
-                        filtered_ids.append(_id)
-                        break  # We use break to avoid adding duplicate ids
-        return filtered_ids
+    def _filter_id(self, id):
+        anno_path = os.path.join(self.cfg.datamodule.anno_path, f"{Path(id).stem}.json")
+        with open(anno_path) as f:
+            anno = json.load(f)
+            for obj in anno["objects"]:
+                if obj["label"] in self.classes:
+                    return True
+        return False
