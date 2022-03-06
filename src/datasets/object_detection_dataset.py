@@ -87,7 +87,7 @@ class ObjectDetectionDataset(Dataset):
         target = self._load_target(id)
 
         if self.transforms is not None:
-            # but this in transforms:
+            # put this in transforms:
             # image, target = self.transforms(image, target)
 
             sample = self.transforms(image=image, bboxes=target["boxes"], labels=target["labels"])

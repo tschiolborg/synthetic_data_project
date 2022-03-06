@@ -1,42 +1,32 @@
 import json
 import os
 import sys
+from pathlib import Path
 
 from tqdm import tqdm
-import dotenv
+import matplotlib.pyplot as plt
 
-from src.utils.visualize import visualize_with_anno
+from visualize import show_image, visualize_anno
 
-from load_files import load_annotation, load_image, ROOT
+from load_files import ROOT, load_annotation
 
 
-def generate_all_classes(file, dataset_dir_name):
+def generate_all_classes(filename, dataset_dir_name):
     """generates all classes mentioned in annotations and saves them as a json"""
 
     ## assert
-    dataset_dir = os.path.join(ROOT, "data", dataset_dir_name)
-    anno_dir = os.path.join(dataset_dir, "annotations")
+    data_dir = os.path.join(ROOT, "data")
+    dataset_dir = os.path.join(data_dir, dataset_dir_name)
 
-    if not os.path.isdir(dataset_dir):
-        raise "Could not find specified data directory at: " + dataset_dir
-
-    if not os.path.isdir(anno_dir):
-        raise "Could not find annotation directory: " + anno_dir
-
-    filename, file_extension = os.path.splitext(file)
-    print(file_extension)
-    if file_extension in [".json", ""]:
-        filename += ".json"
-    else:
-        raise "File extension must be json"
+    if not os.path.isdir(data_dir):
+        raise Exception("Could not find specified data directory at: " + data_dir)
 
     ## create data
     classes = {"_": {"id": 0, "images": {}, "count": -1}}
     i = 1
-    for fname in tqdm(
-        list(os.listdir(os.path.join(ROOT, "data", dataset_dir_name, "annotations")))
-    ):
-        anno = load_annotation(fname, dataset_dir_name)
+    for item in tqdm(list(os.listdir(os.path.join(dataset_dir, "annotations")))):
+        image_key = Path(item).stem
+        anno = load_annotation(image_key, dataset_dir_name)
 
         for obj in anno["objects"]:
             label = obj["label"]
@@ -44,18 +34,63 @@ def generate_all_classes(file, dataset_dir_name):
                 classes[label] = dict()
                 classes[label]["id"] = i
                 classes[label]["count"] = 1
-                classes[label]["images"] = {fname: 1}
+                classes[label]["images"] = {image_key: 1}
                 i += 1
             else:
-                if fname not in classes[label]["images"]:
-                    classes[label]["images"][fname] = 0
+                if image_key not in classes[label]["images"]:
+                    classes[label]["images"][image_key] = 0
                 classes[label]["count"] += 1
-                classes[label]["images"][fname] += 1
+                classes[label]["images"][image_key] += 1
+
+    save_file(filename, data_dir, classes)
+
+
+def generate_manually_chosen_classes(file_in, file_out, dataset_dir_name):
+    """generate subset of classes based on which you choose"""
+
+    data_dir = os.path.join(ROOT, "data")
+
+    if not os.path.isdir(data_dir):
+        raise Exception("Could not find specified data directory at: " + data_dir)
+
+    with open(os.path.join(data_dir, "classes", file_in)) as f:
+        classes = json.load(f)
+
+    new_classes = dict()
+    i = 1
+    for label, data in classes.items():
+        print(i, data["id"], label, data["count"])
+        images = list(data["images"])
+
+        for image_key in images:
+            image = visualize_anno(image_key, dataset_dir_name)
+            show_image(image)
+
+            my_input = input("Choose? [y] for yes, [n] for no, otherwise next image: ")
+            if my_input == "y":
+                print("chose image")
+                new_classes[label] = classes[label]
+                i += 1
+                break
+            if my_input == "n":
+                print("not chosen")
+                break
+
+    save_file(file_out, data_dir, new_classes)
+
+
+def save_file(filename, data_dir, classes):
+    filename, file_extension = os.path.splitext(filename)
+    print(file_extension)
+    if file_extension in [".json", ""]:
+        filename += ".json"
+    else:
+        raise Exception("File extension must be json")
 
     print("\nnumber of classes: ", len(classes))
 
     ## save file
-    filename = os.path.join(dataset_dir, "classes", filename)
+    filename = os.path.join(data_dir, "classes", filename)
 
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     with open(filename, "w+") as f:
@@ -63,18 +98,13 @@ def generate_all_classes(file, dataset_dir_name):
         json.dump(classes, f, indent=6)
 
 
-def generate_manually_chosen_classes(file_in, file_out):
-    """generate subset of classes based on which you choose"""
-    pass
-
-
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        raise "Missing argument for filename"
+        raise Exception("Missing argument for dataset directory-name")
     if len(sys.argv) < 3:
-        print("Missing argument for dataset directory-name so using 'data/annotations'")
-        dir_name = ""
+        raise Exception("Missing argument for output filename")
+    if len(sys.argv) < 4:
+        print("Missing argument for input filename so creating all classes")
+        generate_all_classes(sys.argv[2], sys.argv[1])
     else:
-        dir_name = sys.argv[2]
-
-    generate_all_classes(sys.argv[1], dir_name)
+        generate_manually_chosen_classes(sys.argv[3], sys.argv[2], sys.argv[1])
