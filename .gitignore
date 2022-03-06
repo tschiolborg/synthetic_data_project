@@ -2,14 +2,13 @@
 outputs/
 
 
-### Lightning-Hydra-Template
-configs/local/default.yaml
+### Template
 data/
 logs/
 wandb/
 .env
 .autoenv
-
+.vscode
 
 
 
