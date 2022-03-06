@@ -1,7 +1,0 @@
-{
-    "editor.rulers": [
-        100
-    ],
-    "editor.formatOnSave": true,
-    "python.formatting.provider": "black",
-}
