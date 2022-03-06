@@ -8,7 +8,7 @@ logs/
 wandb/
 .env
 .autoenv
-.vscode
+.vscode/
 
 
 
