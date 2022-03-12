@@ -4,7 +4,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-from load_files import load_annotation, load_image, ROOT
+from src.utils.load_files import load_annotation, load_image, ROOT
 
 
 def show_image(image):
@@ -13,7 +13,7 @@ def show_image(image):
     plt.show()
 
 
-def visualize_anno(image_key, dataset_dir_name):
+def visualize_with_anno(image_key, dataset_dir_name):
     anno = load_annotation(image_key, dataset_dir_name)
     image = load_image(image_key, dataset_dir_name=dataset_dir_name)
 
@@ -22,13 +22,26 @@ def visualize_anno(image_key, dataset_dir_name):
         ymin = int(obj["bbox"]["ymin"])
         xmax = int(obj["bbox"]["xmax"])
         ymax = int(obj["bbox"]["ymax"])
-        class_name = obj["label"]
+        label = obj["label"]
 
-        cv2.rectangle(image, (xmin, ymin), (xmax, ymax), (0, 0, 255), 2)
+        image = insert_box(image, (xmin, ymin, xmax, ymax), label)
 
-        font = cv2.FONT_HERSHEY_PLAIN
-        cv2.putText(image, class_name, (xmin + 5, ymin - 5), font, 1, (0, 0, 0), 1, cv2.LINE_AA)
+    return image
 
+
+####### look at albuementations viz
+def insert_box(image, box, label):
+    xmin = int(box[0])
+    ymin = int(box[1])
+    xmax = int(box[2])
+    ymax = int(box[3])
+
+    image = np.ascontiguousarray(image, dtype=np.float32)
+    label = str(label)
+
+    cv2.rectangle(image, (xmin, ymin), (xmax, ymax), (0, 0, 255), 2)
+    font = cv2.FONT_HERSHEY_PLAIN
+    cv2.putText(image, label, (xmin + 5, ymin - 5), font, 1, (0, 0, 0), 1, cv2.LINE_AA)
     return image
 
 
@@ -37,5 +50,5 @@ if __name__ == "__main__":
     dataset_dir_name = "MTSD"
 
     # visualize traffic sign boxes on the image
-    image = visualize_anno(image_key, dataset_dir_name)
+    image = visualize_with_anno(image_key, dataset_dir_name)
     show_image(image)

@@ -4,9 +4,8 @@ import sys
 from pathlib import Path
 
 from tqdm import tqdm
-import matplotlib.pyplot as plt
 
-from visualize import show_image, visualize_anno
+from visualize import show_image, visualize_with_anno
 
 from load_files import ROOT, load_annotation
 
@@ -42,7 +41,7 @@ def generate_all_classes(filename, dataset_dir_name):
                 classes[label]["count"] += 1
                 classes[label]["images"][image_key] += 1
 
-    save_file(filename, data_dir, classes)
+    save_classes(filename, data_dir, classes)
 
 
 def generate_manually_chosen_classes(file_in, file_out, dataset_dir_name):
@@ -60,15 +59,24 @@ def generate_manually_chosen_classes(file_in, file_out, dataset_dir_name):
     i = 1
     for label, data in classes.items():
         print(i, data["id"], label, data["count"])
+
+        if label == "_":
+            print("chosen")
+            new_classes[label] = classes[label]
+            continue
+
         images = list(data["images"])
 
         for image_key in images:
-            image = visualize_anno(image_key, dataset_dir_name)
+            if image == images[-1]:
+                print("last image for this class!")
+
+            image = visualize_with_anno(image_key, dataset_dir_name)
             show_image(image)
 
             my_input = input("Choose? [y] for yes, [n] for no, otherwise next image: ")
             if my_input == "y":
-                print("chose image")
+                print("chosen")
                 new_classes[label] = classes[label]
                 i += 1
                 break
@@ -76,10 +84,10 @@ def generate_manually_chosen_classes(file_in, file_out, dataset_dir_name):
                 print("not chosen")
                 break
 
-    save_file(file_out, data_dir, new_classes)
+    save_classes(file_out, data_dir, new_classes)
 
 
-def save_file(filename, data_dir, classes):
+def save_classes(filename, data_dir, classes):
     filename, file_extension = os.path.splitext(filename)
     print(file_extension)
     if file_extension in [".json", ""]:

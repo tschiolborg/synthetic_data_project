@@ -67,7 +67,7 @@ class ObjectDetectionDataset(Dataset):
                 label = obj["label"]
                 box = obj["bbox"]
                 if self.classes is None or label in self.classes:
-                    labels.append(self.classes[label])
+                    labels.append(self.classes[label]["id"])
                     boxes.append([box["xmin"], box["ymin"], box["xmax"], box["ymax"]])
 
         boxes = torch.as_tensor(boxes, dtype=torch.float32)

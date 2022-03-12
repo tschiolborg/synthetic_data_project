@@ -1,20 +1,20 @@
 datamodule:
   train:
-    dir: data/images/train
-    batch_size: 4
+    dir: data/MTSD/images/train
+    batch_size: 1
     num_workers: 0
     pin_memory:
     transforms:
   val:
-    dir: data/images/val
+    dir: data/MTSD/images/val
     batch_size: 1
     num_workers: 0
     pin_memory:
     transforms:
   test:
-  anno_dir: data/annotations
-  classes_path: data/classes/classes.json
-  include_negative_examples: true
+  anno_dir: data/MTSD/annotations
+  classes_path: data/classes/reduced_146.json
+  include_negative_examples: false
 
 training:
   debug: false
