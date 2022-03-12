@@ -1,15 +1,15 @@
 ### Define your own
 outputs/
 
+data/*
+!data/classes/
 
-### Template
-data/
+
 logs/
 wandb/
 .env
 .autoenv
 .vscode/
-
 
 
 #### MAC
