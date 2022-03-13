@@ -5,9 +5,9 @@ import json
 
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
+from omegaconf import DictConfig
 
 from src.datasets import ObjectDetectionDataset as MyDataset
-from omegaconf import DictConfig
 
 
 class MtsdDataModule(LightningDataModule):

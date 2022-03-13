@@ -2,56 +2,46 @@ from typing import Any, List
 
 import torch
 from pytorch_lightning import LightningModule
-from torchmetrics import MaxMetric
-from torchmetrics.classification.accuracy import Accuracy
-
-from src.models.components.simple_dense_net import SimpleDenseNet
+from torchmetrics.detection.map import MeanAveragePrecision
+from torchvision.models.detection import fasterrcnn_resnet50_fpn
+from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
+from omegaconf import DictConfig
 
 
 class MtsdLitModule(LightningModule):
     """
-    Example of LightningModule for MNIST classification.
-
-    A LightningModule organizes your PyTorch code into 5 sections:
-        - Computations (init).
-        - Train loop (training_step)
-        - Validation loop (validation_step)
-        - Test loop (test_step)
-        - Optimizers (configure_optimizers)
-
-    Read the docs:
-        https://pytorch-lightning.readthedocs.io/en/latest/common/lightning_module.html
+    PyTorch Lightning module for object detection
     """
 
-    def __init__(
-        self,
-        input_size: int = 784,
-        lin1_size: int = 256,
-        lin2_size: int = 256,
-        lin3_size: int = 256,
-        output_size: int = 10,
-        lr: float = 0.001,
-        weight_decay: float = 0.0005,
-    ):
+    def __init__(self, cfg: DictConfig):
         super().__init__()
+
+        self.cfg = cfg
 
         # this line allows to access init params with 'self.hparams' attribute
         # it also ensures init params will be stored in ckpt
-        self.save_hyperparameters(logger=False)
+        # self.save_hyperparameters(logger=False)
 
-        self.model = SimpleDenseNet(hparams=self.hparams)
+        self.num_classes = cfg.num_classes
+
+        self.model = fasterrcnn_resnet50_fpn(pretrained=True)
+
+        # get number of input features for the classifier
+        in_features = self.model.roi_heads.box_predictor.cls_score.in_features
+
+        # replace the pre-trained head with a new one
+        self.model.roi_heads.box_predictor = FastRCNNPredictor(in_features, self.num_classes)
 
         # loss function
-        self.criterion = torch.nn.CrossEntropyLoss()
+        # self.criterion = torch.nn.CrossEntropyLoss()
 
         # use separate metric instance for train, val and test step
         # to ensure a proper reduction over the epoch
-        self.train_acc = Accuracy()
-        self.val_acc = Accuracy()
-        self.test_acc = Accuracy()
+        self.train_acc = MeanAveragePrecision()
+        self.val_acc = MeanAveragePrecision()
 
         # for logging best so far validation accuracy
-        self.val_acc_best = MaxMetric()
+        # self.val_acc_best = MaxMetric()
 
     def forward(self, x: torch.Tensor):
         return self.model(x)
@@ -93,9 +83,7 @@ class MtsdLitModule(LightningModule):
     def validation_epoch_end(self, outputs: List[Any]):
         acc = self.val_acc.compute()  # get val accuracy from current epoch
         self.val_acc_best.update(acc)
-        self.log(
-            "val/acc_best", self.val_acc_best.compute(), on_epoch=True, prog_bar=True
-        )
+        self.log("val/acc_best", self.val_acc_best.compute(), on_epoch=True, prog_bar=True)
 
     def test_step(self, batch: Any, batch_idx: int):
         loss, preds, targets = self.step(batch)
@@ -123,8 +111,4 @@ class MtsdLitModule(LightningModule):
         See examples here:
             https://pytorch-lightning.readthedocs.io/en/latest/common/lightning_module.html#configure-optimizers
         """
-        return torch.optim.Adam(
-            params=self.parameters(),
-            lr=self.hparams.lr,
-            weight_decay=self.hparams.weight_decay,
-        )
+        return torch.optim.Adam(lr=self.cfg.train.lr)

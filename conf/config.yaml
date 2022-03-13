@@ -13,8 +13,12 @@ datamodule:
     transforms:
   test:
   anno_dir: data/MTSD/annotations
-  classes_path: data/classes/reduced_146.json
+  classes_path: data/classes/single.json
+  num_classes: 2
   include_negative_examples: false
 
 training:
   debug: false
+
+train:
+  lr: 0.001
