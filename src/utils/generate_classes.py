@@ -5,9 +5,9 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from visualize import show_image, visualize_with_anno
+from src.utils.visualize import show_image, visualize_with_anno
 
-from load_files import ROOT, load_annotation
+from src.utils.load_files import ROOT, load_annotation
 
 
 def generate_all_classes(filename, dataset_dir_name):
@@ -68,7 +68,7 @@ def generate_manually_chosen_classes(file_in, file_out, dataset_dir_name):
         images = list(data["images"])
 
         for image_key in images:
-            if image == images[-1]:
+            if image_key == images[-1]:
                 print("last image for this class!")
 
             image = visualize_with_anno(image_key, dataset_dir_name)
@@ -105,6 +105,11 @@ def save_classes(filename, data_dir, classes):
         print(f"saving as: {filename}")
         json.dump(classes, f, indent=6)
 
+
+# run as:
+# $ python -m src.utils.generate_classes reduced.json classes.json
+# or if you want all classes:
+# $  python -m src.utils.generate_classes classes.json
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:

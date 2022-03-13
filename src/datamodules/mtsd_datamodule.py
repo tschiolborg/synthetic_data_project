@@ -37,9 +37,9 @@ class MtsdDataModule(LightningDataModule):
             self._setup_dataset(self.cfg.datamodule.val) if self.cfg.datamodule.val else None
         )
 
-        self.test_dataset = (
-            self._setup_dataset(self.cfg.datamodule.test) if self.cfg.datamodule.test else None
-        )
+        # self.test_dataset = (
+        #    self._setup_dataset(self.cfg.datamodule.test) if self.cfg.datamodule.test else None
+        # )
 
     def train_dataloader(self):
         return (

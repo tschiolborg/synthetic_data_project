@@ -10,7 +10,7 @@ import torch
 import torchvision
 from torch.utils.data import Dataset
 from albumentations.core.composition import Compose
-from transforms import get_transform
+from src.transforms import get_transform
 
 
 class ObjectDetectionDataset(Dataset):
@@ -19,8 +19,8 @@ class ObjectDetectionDataset(Dataset):
         image_ids: List,
         image_dir: str,
         anno_dir: str,
+        transforms: bool,  # Optional[Compose] = None,
         classes: Optional[Dict[str, int]] = None,
-        transforms: Optional[Compose] = None,
     ):
         """
         Dataset for object detection.
@@ -41,7 +41,7 @@ class ObjectDetectionDataset(Dataset):
         self.image_dir = image_dir
         self.anno_dir = anno_dir
         self.classes = classes
-        self.transforms = get_transform(True)
+        self.transforms = get_transform(transforms)
         self.num_classes = len(classes) if classes is not None else -1  # -1 for all classes
 
     def __len__(self):

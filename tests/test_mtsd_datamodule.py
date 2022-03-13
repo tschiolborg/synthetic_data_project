@@ -8,7 +8,7 @@ from src.datamodules.mtsd_datamodule import MtsdDataModule
 from src.utils.load_files import ROOT
 
 
-@pytest.mark.parametrize("batch_size", [1])
+@pytest.mark.parametrize("batch_size", [1, 32])
 def test_mtsd_datamodule(batch_size):
 
     conf_dir = os.path.join(ROOT, "conf")
@@ -35,16 +35,11 @@ def test_mtsd_datamodule(batch_size):
 
     datamodule.setup()
 
-    assert datamodule.train_dataset and datamodule.val_dataset and datamodule.test_dataset
-    assert (
-        len(datamodule.train_dataset) > 0
-        and len(datamodule.val_dataset) > 0
-        and len(datamodule.test_dataset) > 0
-    )
+    assert datamodule.train_dataset and datamodule.val_dataset
+    assert len(datamodule.train_dataset) > 0 and len(datamodule.val_dataset) > 0
 
     assert datamodule.train_dataloader()
     assert datamodule.val_dataloader()
-    assert datamodule.test_dataloader()
 
     images, targets = next(iter(datamodule.train_dataloader()))
 
@@ -56,7 +51,11 @@ def test_mtsd_datamodule(batch_size):
 
     assert image.dtype == torch.float32
 
-    assert target.get("labels") and target.get("boxes") and target.get("area")
+    assert (
+        target.get("labels") is not None
+        and target.get("boxes") is not None
+        and target.get("area") is not None
+    )
     assert target["labels"].dtype == torch.int64
     assert target["boxes"].dtype == torch.float32
     assert target["area"].dtype == torch.float32

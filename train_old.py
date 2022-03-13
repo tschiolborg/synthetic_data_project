@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from dataset import MtsdDataset
 from HydraNet.conf.config import PipelineConfig
-from transforms import get_transform
+from src.transforms import get_transform
 
 log = logging.getLogger(__name__)
 
@@ -37,9 +37,7 @@ def train(cfg: PipelineConfig):
 
     # use dataset with transformations
     dataset = MtsdDataset(cfg=cfg_dataset, transform=get_transform(train=True))
-    dataset_val = MtsdDataset(
-        cfg=cfg_dataset_val, transform=get_transform(train=False)
-    )
+    dataset_val = MtsdDataset(cfg=cfg_dataset_val, transform=get_transform(train=False))
 
     print(f"Size of training data: {len(dataset)}")
     print(f"Size of validation data: {len(dataset_val)}")
@@ -88,9 +86,7 @@ def train(cfg: PipelineConfig):
     print("Done")
 
 
-def train_one_epoch(
-    model, optimizer, data_loader, device, epoch, print_freq=200, scaler=None
-):
+def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200, scaler=None):
     """
     Train one epoch
     dont know if scaler works
@@ -107,9 +103,7 @@ def train_one_epoch(
             optimizer, start_factor=warmup_factor, total_iters=warmup_iters
         )
 
-    for idx, (images, targets) in enumerate(
-        tqdm(data_loader, desc=f"Epoch [{epoch+1}]")
-    ):
+    for idx, (images, targets) in enumerate(tqdm(data_loader, desc=f"Epoch [{epoch+1}]")):
         # to device
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
