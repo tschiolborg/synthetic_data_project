@@ -1,0 +1,25 @@
+datamodule:
+  train:
+    dir: data/MTSD/images/train
+    batch_size: 1
+    num_workers: 0
+    pin_memory:
+    transforms:
+  val:
+    dir: data/MTSD/images/val
+    batch_size: 1
+    num_workers: 0
+    pin_memory:
+    transforms:
+  test:
+    dir: data/MTSD/images/test
+    batch_size: 1
+    num_workers: 0
+    pin_memory:
+    transforms:
+  anno_dir: data/MTSD/annotations
+  classes_path: data/classes/reduced_146.json
+  include_negative_examples: false
+
+training:
+  debug: false

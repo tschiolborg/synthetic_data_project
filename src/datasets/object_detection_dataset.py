@@ -47,6 +47,7 @@ class ObjectDetectionDataset(Dataset):
     def __len__(self):
         return len(self.image_ids)
 
+    ###### replace this
     def _load_image(self, id):
         image_path = os.path.join(self.image_dir, id)
         image = cv2.imread(image_path)

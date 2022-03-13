@@ -1,5 +1,3 @@
-import os
-
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,20 +6,25 @@ from src.utils.load_files import load_annotation, load_image, ROOT
 
 
 def show_image(image):
+    if image.dtype == np.float32:
+        image = (image * 255).astype(np.uint8)
+    elif image.dtype != np.unit8:
+        assert Exception("Must be of type float32 or uint8 to show image")
     plt.figure(figsize=(10, 10), dpi=100)
-    plt.imshow((image * 255).astype(np.uint8))
+    plt.axis("off")
+    plt.imshow(image)
     plt.show()
 
 
-def visualize_with_anno(image_key, dataset_dir_name):
-    anno = load_annotation(image_key, dataset_dir_name)
-    image = load_image(image_key, dataset_dir_name=dataset_dir_name)
+def visualize_with_anno(image_key, dataset_name):
+    anno = load_annotation(image_key, dataset_name)
+    image = load_image(image_key, dataset_name=dataset_name)
 
     for obj in anno["objects"]:
-        xmin = int(obj["bbox"]["xmin"])
-        ymin = int(obj["bbox"]["ymin"])
-        xmax = int(obj["bbox"]["xmax"])
-        ymax = int(obj["bbox"]["ymax"])
+        xmin = obj["bbox"]["xmin"]
+        ymin = obj["bbox"]["ymin"]
+        xmax = obj["bbox"]["xmax"]
+        ymax = obj["bbox"]["ymax"]
         label = obj["label"]
 
         image = insert_box(image, (xmin, ymin, xmax, ymax), label)
@@ -29,7 +32,6 @@ def visualize_with_anno(image_key, dataset_dir_name):
     return image
 
 
-####### look at albuementations viz
 def insert_box(image, box, label):
     xmin = int(box[0])
     ymin = int(box[1])

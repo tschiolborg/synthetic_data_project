@@ -12,20 +12,20 @@ if not ROOT:
     raise Exception('Not able to find "ROOT" environment variable')
 
 
-def load_annotation(image_key, dataset_dir):
+def load_annotation(image_key, dataset_name):
     with open(
-        os.path.join(ROOT, "data", dataset_dir, "annotations", f"{image_key}.json"), "r"
+        os.path.join(ROOT, "data", dataset_name, "annotations", f"{image_key}.json"), "r"
     ) as fid:
         anno = json.load(fid)
     return anno
 
 
-def load_image(id, image_dir=None, dataset_dir_name=None, file_extention="jpg"):
+def load_image(id, image_dir=None, dataset_name=None, file_extention="jpg"):
     if image_dir is None:
-        if dataset_dir_name is not None:
-            image_dir = get_image_dir(id, dataset_dir_name)
+        if dataset_name is not None:
+            image_dir = get_image_dir(id, dataset_name)
         else:
-            raise Exception("Cannot find directory (missing dataset_dir_name or image_dir)")
+            raise Exception("Cannot find directory (missing dataset_name or image_dir)")
 
     image_path = os.path.join(image_dir, f"{id}.{file_extention}")
     image = cv2.imread(image_path)
@@ -34,8 +34,8 @@ def load_image(id, image_dir=None, dataset_dir_name=None, file_extention="jpg"):
     return image
 
 
-def get_image_dir(id, dataset_dir):
-    dataset_dir = os.path.join(ROOT, "data", dataset_dir)
+def get_image_dir(id, dataset_name):
+    dataset_dir = os.path.join(ROOT, "data", dataset_name)
 
     images_dir = None
 
