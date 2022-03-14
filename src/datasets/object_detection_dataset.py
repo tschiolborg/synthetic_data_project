@@ -11,6 +11,7 @@ import torchvision
 from torch.utils.data import Dataset
 from albumentations.core.composition import Compose
 from src.transforms import get_transform
+from src.utils.load_files import load_image
 
 
 class ObjectDetectionDataset(Dataset):
@@ -42,18 +43,12 @@ class ObjectDetectionDataset(Dataset):
         self.anno_dir = anno_dir
         self.classes = classes
         self.transforms = get_transform(transforms)
-        self.num_classes = len(classes) if classes is not None else -1  # -1 for all classes
+        self.num_classes = (
+            len(classes) if classes is not None else -1
+        )  # -1 for all classes
 
     def __len__(self):
         return len(self.image_ids)
-
-    ###### replace this
-    def _load_image(self, id):
-        image_path = os.path.join(self.image_dir, id)
-        image = cv2.imread(image_path)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB).astype(np.float32)
-        image /= 255
-        return image
 
     def _load_target(self, id):
         anno_dir = os.path.join(self.anno_dir, f"{Path(id).stem}.json")
@@ -84,14 +79,16 @@ class ObjectDetectionDataset(Dataset):
 
     def __getitem__(self, idx):
         id = self.image_ids[idx]
-        image = self._load_image(id)
+        image = load_image(Path(id).stem, self.image_dir)
         target = self._load_target(id)
 
         if self.transforms is not None:
             # put this in transforms:
             # image, target = self.transforms(image, target)
 
-            sample = self.transforms(image=image, bboxes=target["boxes"], labels=target["labels"])
+            sample = self.transforms(
+                image=image, bboxes=target["boxes"], labels=target["labels"]
+            )
 
             while len(sample["bboxes"]) == 0:
                 # retry until the bbox is acceptable
@@ -111,5 +108,4 @@ class ObjectDetectionDataset(Dataset):
         return image, target
 
     def collate_fn(self, batch):
-        images, targets = tuple(zip(*batch))
-        return (images if self.transforms is None else torch.stack(images)), targets
+        return tuple(zip(*batch))

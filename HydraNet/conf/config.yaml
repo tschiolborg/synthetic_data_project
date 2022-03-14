@@ -2,8 +2,8 @@ train:
   epochs: 10
   lr: 1e-3
   dataset: &dataset_anchor
-    img_dir: ${hydra:runtime.cwd}/data/images/train
-    anno_dir: ${hydra:runtime.cwd}/data/annotations
+    img_dir: ${hydra:runtime.cwd}/data/MTSD/images/train
+    anno_dir: ${hydra:runtime.cwd}/data/MTSD/annotations
     classes: [_, "regulatory--stop--g1"]
     use_single_annotation_file: false
     label_map: { _: 0, "regulatory--stop--g1": 1 }
@@ -12,8 +12,8 @@ train:
     batch_size: 2
     num_workers: 4
   dataset_val:
-    img_dir: ${hydra:runtime.cwd}/data/images/val
-    anno_dir: ${hydra:runtime.cwd}/data/annotations
+    img_dir: ${hydra:runtime.cwd}/data/MTSD/images/val
+    anno_dir: ${hydra:runtime.cwd}/data/MTSD/annotations
     classes: [_, "regulatory--stop--g1"]
     use_single_annotation_file: false
     label_map: { _: 0, "regulatory--stop--g1": 1 }
