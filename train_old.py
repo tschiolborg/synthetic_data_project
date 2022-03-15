@@ -87,7 +87,7 @@ def train(cfg: PipelineConfig):
     optimizer = torch.optim.SGD(params, lr=0.005, momentum=0.9, weight_decay=0.0005)
     lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.1)
 
-    num_epochs = 1
+    num_epochs = 5
 
     val_metric = MeanAveragePrecision()
 
@@ -120,6 +120,10 @@ def train(cfg: PipelineConfig):
                 img = insert_box(img, box.cpu(), "2")
             show_image(img)
 
+    # model_name = os.getcwd().split("\\")[-1] + ".pth"
+    # print(model_name)
+    # torch.save(model.state_dict(), model_name)
+
 
 def train_one_epoch(
     model, optimizer, data_loader, device, epoch, print_freq=200, scaler=None
@@ -130,6 +134,8 @@ def train_one_epoch(
     """
     model.train()
     model = model.to(device)
+
+    total_loss = 0
 
     lr_scheduler = None
     if epoch == 0:
@@ -170,9 +176,13 @@ def train_one_epoch(
         if lr_scheduler is not None:
             lr_scheduler.step()
 
+        total_loss += losses
+
         # change to log
-        if idx % print_freq == 0:
-            print(f"Loss: {losses}")
+        # if idx % print_freq == 0:
+        #    print(f"Loss: {losses}")
+
+    print(f"Total loss: {total_loss}")
 
 
 @torch.inference_mode()
@@ -192,6 +202,7 @@ def evaluate(model, data_loader, device, val_metric):
 
     metric = val_metric.compute()
     print(metric)
+    val_metric.reset()
 
 
 #

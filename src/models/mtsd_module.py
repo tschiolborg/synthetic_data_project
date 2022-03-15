@@ -64,18 +64,17 @@ class MtsdLitModule(LightningModule):
         return {}
 
     def validation_epoch_end(self, outputs: List[Any]):
-        metric = self.val_metric.compute()
-        mAP = metric["map"]
+        mAP = self.val_metric.compute()
         self.log("val_mAP", mAP, on_epoch=True, prog_bar=False)
         log = {"main_score": mAP}
+
+        print(mAP)
 
         self.val_metric.reset()  # reset metric at the end of every epoch
         return {"val_mAP": mAP, "log": log, "progress_bar": log}
 
     def configure_optimizers(self):
-        """
-        See examples here:
-            https://pytorch-lightning.readthedocs.io/en/latest/common/lightning_module.html#configure-optimizers
-        """
         params = [p for p in self.model.parameters() if p.requires_grad]
-        return torch.optim.Adam(params, lr=self.cfg.train.lr)
+        return torch.optim.SGD(
+            params, lr=self.cfg.train.lr, momentum=0.9, weight_decay=0.0005
+        )

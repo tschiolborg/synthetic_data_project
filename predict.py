@@ -8,6 +8,7 @@ import torch
 from src.utils.load_files import ROOT
 from src.models.mtsd_module import MtsdLitModule
 from src.datamodules.mtsd_datamodule import MtsdDataModule
+from src.utils.visualize import insert_box, show_image
 
 warnings.filterwarnings("ignore")
 
@@ -24,10 +25,10 @@ def predict(cfg: DictConfig) -> None:
     path = os.path.join(
         ROOT,
         "outputs",
-        "2022-03-14",
-        "22-18-44",
+        "2022-03-15",
+        "18-23-56",
         "default",
-        "2",
+        "3",
         "checkpoints",
         "epoch=4-step=2609.ckpt",
     )
@@ -47,6 +48,13 @@ def predict(cfg: DictConfig) -> None:
 
             print(targets)
             print(preds)
+            for img, target, pred in zip(images, targets, preds):
+                img = img.cpu().permute((1, 2, 0))
+                for box in target["boxes"]:
+                    img = insert_box(img, box.cpu(), "1")
+                for box in pred["boxes"]:
+                    img = insert_box(img, box.cpu(), "2")
+                show_image(img)
 
 
 @hydra.main(config_path="conf/", config_name="config.yaml")

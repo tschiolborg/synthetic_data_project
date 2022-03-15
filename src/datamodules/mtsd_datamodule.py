@@ -30,12 +30,19 @@ class MtsdDataModule(LightningDataModule):
         self.num_classes = len(self.classes)
 
         self.train_dataset = (
-            self._setup_dataset(self.cfg.datamodule.train) if self.cfg.datamodule.train else None
+            self._setup_dataset(self.cfg.datamodule.train)
+            if self.cfg.datamodule.train
+            else None
         )
 
         self.val_dataset = (
-            self._setup_dataset(self.cfg.datamodule.val) if self.cfg.datamodule.val else None
+            self._setup_dataset(self.cfg.datamodule.val)
+            if self.cfg.datamodule.val
+            else None
         )
+
+        print(f"Train len: {len(self.train_dataset)}")
+        print(f"Val len: {len(self.val_dataset)}")
 
         # self.test_dataset = (
         #    self._setup_dataset(self.cfg.datamodule.test) if self.cfg.datamodule.test else None
