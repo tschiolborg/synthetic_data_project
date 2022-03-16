@@ -1,3 +1,3 @@
 ## Overview
-* [Mapillary Traffic Sign Dataset](MTSD/README.md)
+* [Mapillary Traffic Sign Dataset](MTSD)
 
