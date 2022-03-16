@@ -2,6 +2,7 @@ import logging
 import math
 import sys
 import json
+import warnings
 
 import hydra
 import torch
@@ -26,7 +27,10 @@ from HydraNet.conf.config import PipelineConfig
 from src.transforms import get_transform
 from src.utils.visualize import insert_box, show_image
 
+warnings.filterwarnings("ignore")
+
 log = logging.getLogger(__name__)
+
 
 
 @hydra.main(config_path="HydraNet/conf", config_name="config.yaml")

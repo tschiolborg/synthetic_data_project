@@ -21,7 +21,7 @@ def generate_all_classes(filename, dataset_dir_name):
         raise Exception("Could not find specified data directory at: " + data_dir)
 
     ## create data
-    classes = {"_": {"id": 0, "images": {}, "count": -1}}
+    classes = {"_": {"id": 0, "id_gloabl": 0, "count": -1}}
     i = 1
     for item in tqdm(list(os.listdir(os.path.join(dataset_dir, "annotations")))):
         image_key = Path(item).stem
@@ -32,14 +32,11 @@ def generate_all_classes(filename, dataset_dir_name):
             if label not in classes:
                 classes[label] = dict()
                 classes[label]["id"] = i
+                classes[label]["id_global"] = i
                 classes[label]["count"] = 1
-                classes[label]["images"] = {image_key: 1}
                 i += 1
             else:
-                if image_key not in classes[label]["images"]:
-                    classes[label]["images"][image_key] = 0
                 classes[label]["count"] += 1
-                classes[label]["images"][image_key] += 1
 
     save_classes(filename, data_dir, classes)
 
@@ -77,6 +74,7 @@ def generate_manually_chosen_classes(file_in, file_out, dataset_dir_name):
             my_input = input("Choose? [y] for yes, [n] for no, otherwise next image: ")
             if my_input == "y":
                 print("chosen")
+                classes[label]['id'] = i
                 new_classes[label] = classes[label]
                 i += 1
                 break
@@ -89,7 +87,6 @@ def generate_manually_chosen_classes(file_in, file_out, dataset_dir_name):
 
 def save_classes(filename, data_dir, classes):
     filename, file_extension = os.path.splitext(filename)
-    print(file_extension)
     if file_extension in [".json", ""]:
         filename += ".json"
     else:

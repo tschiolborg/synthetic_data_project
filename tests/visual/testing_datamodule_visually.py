@@ -12,7 +12,7 @@ if __name__ == "__main__":
     conf_dir = os.path.join(ROOT, "conf")
 
     with hydra.initialize_config_dir(config_dir=conf_dir):
-        cfg = hydra.compose(config_name="testing.yaml")
+        cfg = hydra.compose(config_name="debug.yaml")
 
     datamodule = MtsdDataModule(cfg=cfg)
     datamodule.setup()

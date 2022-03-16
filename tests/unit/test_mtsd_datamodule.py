@@ -16,7 +16,7 @@ def test_mtsd_datamodule(batch_size):
     assert os.path.exists(conf_dir)
 
     with hydra.initialize_config_dir(config_dir=conf_dir):
-        cfg = hydra.compose(config_name="testing.yaml")
+        cfg = hydra.compose(config_name="debug.yaml")
         cfg.datamodule.train.batch_size = batch_size
 
     datamodule = MtsdDataModule(cfg=cfg)
