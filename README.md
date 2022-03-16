@@ -3,7 +3,7 @@ Synthetic data project
 
 Synthetic data for traing deep neural networks for object detection on traffic signs.
 
-Read more under [reports](reports/README.md).
+Read more under [reports](reports).
 
 
 ## Requirements
