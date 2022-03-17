@@ -1,36 +1,29 @@
+import json
 import logging
 import math
+import os
 import sys
-import json
 import warnings
-
-import hydra
-import torch
-import torchvision
-from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
-from tqdm import tqdm
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import cv2
+import hydra
 import numpy as np
 import torch
 import torchvision
 from torch.utils.data import Dataset
-from typing import Any, Callable, Dict, List, Optional, Tuple
-import json
-import logging
-import os
-from pathlib import Path
-from HydraNet.conf.config import DatasetConfig
 from torchmetrics.detection.map import MeanAveragePrecision
+from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
+from tqdm import tqdm
 
-from HydraNet.conf.config import PipelineConfig
+from HydraNet.conf.config import DatasetConfig, PipelineConfig
 from src.transforms import get_transform
 from src.utils.visualize import insert_box, show_image
 
 warnings.filterwarnings("ignore")
 
 log = logging.getLogger(__name__)
-
 
 
 @hydra.main(config_path="HydraNet/conf", config_name="config.yaml")
@@ -129,9 +122,7 @@ def train(cfg: PipelineConfig):
     # torch.save(model.state_dict(), model_name)
 
 
-def train_one_epoch(
-    model, optimizer, data_loader, device, epoch, print_freq=200, scaler=None
-):
+def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq=200, scaler=None):
     """
     Train one epoch
     dont know if scaler works
@@ -271,9 +262,7 @@ class MtsdDataset(Dataset):
         img = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB).astype(np.float32)
         img /= 255
 
-        anno_path = os.path.join(
-            self.anno_dir, f"{self.__get_annotation_id_(idx)}.json"
-        )
+        anno_path = os.path.join(self.anno_dir, f"{self.__get_annotation_id_(idx)}.json")
 
         boxes = []
         labels = []
@@ -307,9 +296,7 @@ class MtsdDataset(Dataset):
             while len(sample["bboxes"]) == 0:
                 # retry until the bbox is acceptable
                 self.log.info("Retrying target transforms.")
-                sample = self.transform(
-                    image=img, bboxes=targets["boxes"], labels=labels
-                )
+                sample = self.transform(image=img, bboxes=targets["boxes"], labels=labels)
 
             img = sample["image"]
             targets["boxes"] = torch.Tensor(sample["bboxes"])

@@ -7,8 +7,8 @@ import torch
 from omegaconf import DictConfig
 from pytorch_lightning.loggers import TensorBoardLogger
 
-from src.models.mtsd_module import MtsdLitModule
 from src.datamodules.mtsd_datamodule import MtsdDataModule
+from src.models.mtsd_module import MtsdLitModule
 
 warnings.filterwarnings("ignore")
 

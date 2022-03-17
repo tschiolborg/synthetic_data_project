@@ -25,12 +25,12 @@ def predict(cfg: DictConfig) -> None:
     path = os.path.join(
         ROOT,
         "outputs",
-        "2022-03-15",
-        "18-23-56",
+        "2022-03-16",
+        "22-51-30",
         "default",
-        "3",
+        "4",
         "checkpoints",
-        "epoch=4-step=2609.ckpt",
+        "epoch=9-step=68909.ckpt",
     )
 
     datamodule = MtsdDataModule(cfg=cfg)
@@ -48,16 +48,15 @@ def predict(cfg: DictConfig) -> None:
 
             print(targets)
             print(preds)
-            for img, target, pred in zip(images, targets, preds):
+            for img, pred in zip(images, preds):
                 img = img.cpu().permute((1, 2, 0))
-                for box in target["boxes"]:
-                    img = insert_box(img, box.cpu(), "1")
-                for box in pred["boxes"]:
-                    img = insert_box(img, box.cpu(), "2")
+                for box, label, score in zip(pred["boxes"], pred["labels"], pred["scores"]):
+                    if score >= 0.01:
+                        img = insert_box(img, box.cpu(), label.numpy())
                 show_image(img)
 
 
-@hydra.main(config_path="conf/", config_name="config.yaml")
+@hydra.main(config_path=os.path.join(ROOT, "conf/"), config_name="config.yaml")
 def run_model(cfg: DictConfig) -> None:
     predict(cfg)
 

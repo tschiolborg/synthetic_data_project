@@ -30,15 +30,11 @@ class MtsdDataModule(LightningDataModule):
         self.num_classes = len(self.classes)
 
         self.train_dataset = (
-            self._setup_dataset(self.cfg.datamodule.train)
-            if self.cfg.datamodule.train
-            else None
+            self._setup_dataset(self.cfg.datamodule.train) if self.cfg.datamodule.train else None
         )
 
         self.val_dataset = (
-            self._setup_dataset(self.cfg.datamodule.val)
-            if self.cfg.datamodule.val
-            else None
+            self._setup_dataset(self.cfg.datamodule.val) if self.cfg.datamodule.val else None
         )
 
         print(f"Train len: {len(self.train_dataset)}")
@@ -114,6 +110,8 @@ class MtsdDataModule(LightningDataModule):
         anno_path = os.path.join(self.cfg.datamodule.anno_dir, f"{Path(id).stem}.json")
         with open(anno_path) as f:
             anno = json.load(f)
+            if anno["ispano"]:
+                return False
             for obj in anno["objects"]:
                 if obj["label"] in self.classes:
                     return True

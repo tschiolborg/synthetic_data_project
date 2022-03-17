@@ -4,11 +4,11 @@ import numpy as np
 
 from src.utils.load_files import load_annotation, load_image, ROOT
 
-
+### TODO: show image id
 def show_image(image):
     if image.dtype == np.float32:
         image = (image * 255).astype(np.uint8)
-    elif image.dtype != np.unit8:
+    elif image.dtype != np.uint8:
         assert Exception("Must be of type float32 or uint8 to show image")
     plt.figure(figsize=(10, 10), dpi=100)
     plt.axis("off")
@@ -48,7 +48,7 @@ def insert_box(image, box, label):
 
 
 if __name__ == "__main__":
-    image_key = "_2xoR0ZHe-cO4fRlANU3wg"
+    image_key = "OENb8BfFyAocFzHHM4Mehg"  # "_2xoR0ZHe-cO4fRlANU3wg"
     dataset_dir_name = "MTSD"
 
     # visualize traffic sign boxes on the image

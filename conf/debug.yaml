@@ -2,19 +2,38 @@ datamodule:
   train:
     dir: ${oc.env:DATA}/MTSD/images/train
     batch_size: 1
-    num_workers: 0
+    num_workers: 4
     pin_memory:
     transforms: true
   val:
     dir: ${oc.env:DATA}/MTSD/images/val
     batch_size: 1
-    num_workers: 0
+    num_workers: 4
     pin_memory:
     transforms: false
   test:
   anno_dir: ${oc.env:DATA}/MTSD/annotations
-  classes_path: ${oc.env:DATA}/classes/reduced_146.json
+  classes_path: ${oc.env:DATA}/classes/reduced_77.json
+  num_classes: 77
   include_negative_examples: false
 
 training:
   debug: true
+
+train:
+  lr: 0.005
+
+trainer:
+  gpus: 1
+  max_epochs: 1
+
+
+save_dir: ${oc.env:ROOT}/logs/
+
+model_checkpoint:
+  class_name: pytorch_lightning.callbacks.ModelCheckpoint
+  params:
+    monitor: "main_score"
+    save_top_k: 1
+    dirpath: "saved_models/"
+    filename: "epoch_{epoch:03d}"

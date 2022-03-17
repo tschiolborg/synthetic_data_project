@@ -43,9 +43,7 @@ class ObjectDetectionDataset(Dataset):
         self.anno_dir = anno_dir
         self.classes = classes
         self.transforms = get_transform(transforms)
-        self.num_classes = (
-            len(classes) if classes is not None else -1
-        )  # -1 for all classes
+        self.num_classes = len(classes) if classes is not None else -1  # -1 for all classes
 
     def __len__(self):
         return len(self.image_ids)
@@ -68,12 +66,12 @@ class ObjectDetectionDataset(Dataset):
 
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
         labels = torch.as_tensor(labels, dtype=torch.int64)
-        area = torchvision.ops.box_area(boxes)
+        # area = torchvision.ops.box_area(boxes)
 
         target = {
             "boxes": boxes,
             "labels": labels,
-            "area": area,
+            # "area": area,
         }
         return target
 
@@ -86,9 +84,7 @@ class ObjectDetectionDataset(Dataset):
             # put this in transforms:
             # image, target = self.transforms(image, target)
 
-            sample = self.transforms(
-                image=image, bboxes=target["boxes"], labels=target["labels"]
-            )
+            sample = self.transforms(image=image, bboxes=target["boxes"], labels=target["labels"])
 
             while len(sample["bboxes"]) == 0:
                 # retry until the bbox is acceptable
@@ -99,7 +95,7 @@ class ObjectDetectionDataset(Dataset):
 
             image = sample["image"]
             target["boxes"] = torch.Tensor(sample["bboxes"])
-            target["area"] = torchvision.ops.box_area(target["boxes"])
+            # target["area"] = torchvision.ops.box_area(target["boxes"])
 
         else:
             ## change this to albuementations

@@ -5,10 +5,10 @@ import torch
 import hydra
 
 from src.datamodules.mtsd_datamodule import MtsdDataModule
-from src.utils.load_files import ROOT
+from src.utils.load_files import ROOT, load_classes
 
 
-@pytest.mark.parametrize("batch_size", [1, 32])
+@pytest.mark.parametrize("batch_size", [1, 4])
 def test_mtsd_datamodule(batch_size):
 
     conf_dir = os.path.join(ROOT, "conf")
@@ -19,6 +19,15 @@ def test_mtsd_datamodule(batch_size):
         cfg = hydra.compose(config_name="debug.yaml")
         cfg.datamodule.train.batch_size = batch_size
 
+    # classes
+    num_classes = cfg.datamodule.num_classes
+    classes = load_classes(cfg.datamodule.classes_path)
+
+    assert len(classes) == num_classes
+    for label in classes:
+        assert classes[label]["id"] < num_classes and classes[label]["id"] >= 0
+
+    # datamodule
     datamodule = MtsdDataModule(cfg=cfg)
     datamodule.prepare_data()
 
@@ -51,11 +60,17 @@ def test_mtsd_datamodule(batch_size):
 
     assert image.dtype == torch.float32
 
-    assert (
-        target.get("labels") is not None
-        and target.get("boxes") is not None
-        and target.get("area") is not None
-    )
+    assert target.get("labels") is not None and target.get("boxes") is not None
     assert target["labels"].dtype == torch.int64
     assert target["boxes"].dtype == torch.float32
-    assert target["area"].dtype == torch.float32
+
+    # target
+    for target in targets:
+        labels = target["labels"].numpy()
+        boxes = target["boxes"]
+
+        for label in labels:
+            assert label < num_classes and label >= 1
+
+        for box in boxes:
+            assert box[0] < box[2] and box[1] < box[3]

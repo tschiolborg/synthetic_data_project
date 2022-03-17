@@ -14,7 +14,8 @@ if not ROOT:
 
 def load_annotation(image_key, dataset_name):
     with open(
-        os.path.join(ROOT, "data", dataset_name, "annotations", f"{image_key}.json"), "r"
+        os.path.join(ROOT, "data", dataset_name, "annotations", f"{image_key}.json"),
+        "r",
     ) as fid:
         anno = json.load(fid)
     return anno
@@ -48,3 +49,9 @@ def get_image_dir(id, dataset_name):
         raise Exception("Could not find image in any splits")
 
     return os.path.join(dataset_dir, "images", images_dir)
+
+
+def load_classes(full_path):
+
+    with open(full_path) as f:
+        return json.load(f)

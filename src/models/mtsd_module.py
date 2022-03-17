@@ -22,7 +22,7 @@ class MtsdLitModule(LightningModule):
         # it also ensures init params will be stored in ckpt
         # self.save_hyperparameters(logger=False)
 
-        self.num_classes = cfg.num_classes
+        self.num_classes = cfg.datamodule.num_classes
 
         self.model = fasterrcnn_resnet50_fpn(pretrained=True)
 
@@ -30,9 +30,7 @@ class MtsdLitModule(LightningModule):
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features
 
         # replace the pre-trained head with a new one
-        self.model.roi_heads.box_predictor = FastRCNNPredictor(
-            in_features, self.num_classes
-        )
+        self.model.roi_heads.box_predictor = FastRCNNPredictor(in_features, self.num_classes)
 
         # metric
         self.val_metric = MeanAveragePrecision()
@@ -75,6 +73,4 @@ class MtsdLitModule(LightningModule):
 
     def configure_optimizers(self):
         params = [p for p in self.model.parameters() if p.requires_grad]
-        return torch.optim.SGD(
-            params, lr=self.cfg.train.lr, momentum=0.9, weight_decay=0.0005
-        )
+        return torch.optim.SGD(params, lr=self.cfg.train.lr, momentum=0.9, weight_decay=0.0005)
