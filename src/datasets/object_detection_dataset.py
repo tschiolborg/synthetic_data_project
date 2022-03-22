@@ -66,12 +66,14 @@ class ObjectDetectionDataset(Dataset):
 
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
         labels = torch.as_tensor(labels, dtype=torch.int64)
-        # area = torchvision.ops.box_area(boxes)
+        area = torchvision.ops.box_area(boxes)
+        img_key = torch.as_tensor(id)
 
         target = {
             "boxes": boxes,
             "labels": labels,
-            # "area": area,
+            "area": area,
+            "img_key": img_key,
         }
         return target
 
@@ -81,8 +83,6 @@ class ObjectDetectionDataset(Dataset):
         target = self._load_target(id)
 
         if self.transforms is not None:
-            # put this in transforms:
-            # image, target = self.transforms(image, target)
 
             sample = self.transforms(image=image, bboxes=target["boxes"], labels=target["labels"])
 
@@ -95,7 +95,7 @@ class ObjectDetectionDataset(Dataset):
 
             image = sample["image"]
             target["boxes"] = torch.Tensor(sample["bboxes"])
-            # target["area"] = torchvision.ops.box_area(target["boxes"])
+            target["area"] = torchvision.ops.box_area(target["boxes"])
 
         else:
             ## change this to albuementations

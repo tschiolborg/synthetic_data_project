@@ -60,9 +60,14 @@ def test_mtsd_datamodule(batch_size):
 
     assert image.dtype == torch.float32
 
-    assert target.get("labels") is not None and target.get("boxes") is not None
+    assert (
+        target.get("labels") is not None
+        and target.get("boxes") is not None
+        and target.get("area") is not None
+    )
     assert target["labels"].dtype == torch.int64
     assert target["boxes"].dtype == torch.float32
+    assert target["area"].dtype == torch.float32
 
     # target
     for target in targets:

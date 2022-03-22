@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 
 from src.utils.load_files import ROOT
 from src.utils.visualize import show_image, visualize_with_anno
@@ -27,6 +28,9 @@ def show_class(file_in, class_key):
 if __name__ == "__main__":
 
     file_in = "classes.json"
-    class_key = "information--motorway--g1"
+    class_key = "information--motorway--g1" if len(sys.argv) < 2 else sys.argv[1]
 
     show_class(file_in, class_key)
+
+
+
