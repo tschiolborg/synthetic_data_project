@@ -2,6 +2,7 @@ from typing import Any, List
 
 import torch
 from pytorch_lightning import LightningModule
+
 from torchmetrics.detection.map import MeanAveragePrecision
 
 # from torchvision.models.detection import fasterrcnn_resnet50_fpn
@@ -43,9 +44,8 @@ class FasterRCNNLitningModule(LightningModule):
 
     def training_step(self, batch: Any, batch_idx: int):
         images, targets = batch
-        # targets = [{k: v for k, v in t.items()} for t in targets]
 
-        loss_dict = self.forward(images, targets)
+        loss_dict, _ = self.forward(images, targets)
         losses = sum(loss for loss in loss_dict.values())
 
         # log train loss
@@ -55,24 +55,26 @@ class FasterRCNNLitningModule(LightningModule):
 
     def validation_step(self, batch: Any, batch_idx: int):
         images, targets = batch
-        # images = list(img for img in images)
-        # targets = [{k: v for k, v in t.items()} for t in targets]
-        outputs = self.forward(images, targets)
+
+        loss_dict, detections = self.forward(images, targets)
+
+        losses = sum(loss for loss in loss_dict.values())
+        self.log("val_loss", losses, on_step=False, on_epoch=True, prog_bar=False)
 
         # update val metrics
-        self.val_metric.update(outputs, targets)
+        self.val_metric.update(detections, targets)
 
         return {}
 
     def validation_epoch_end(self, outputs: List[Any]):
-        mAP = self.val_metric.compute()
-        self.log("val_mAP", mAP, on_epoch=True, prog_bar=False)
-        log = {"main_score": mAP}
+        metric = self.val_metric.compute()
+        self.log("val_mAP", metric, on_epoch=True, prog_bar=False)
+        log = {"main_score": metric}
 
-        print(mAP)
+        print(metric)
 
         self.val_metric.reset()  # reset metric at the end of every epoch
-        return {"val_mAP": mAP, "log": log, "progress_bar": log}
+        return {"val_metric": metric, "log": log, "progress_bar": log}
 
     def configure_optimizers(self):
         params = [p for p in self.model.parameters() if p.requires_grad]

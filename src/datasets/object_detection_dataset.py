@@ -42,7 +42,7 @@ class ObjectDetectionDataset(Dataset):
         self.image_dir = image_dir
         self.anno_dir = anno_dir
         self.classes = classes
-        self.transforms = get_transform(transforms)
+        self.transforms = transforms
         self.num_classes = len(classes) if classes is not None else -1  # -1 for all classes
 
     def __len__(self):
@@ -67,7 +67,7 @@ class ObjectDetectionDataset(Dataset):
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
         labels = torch.as_tensor(labels, dtype=torch.int64)
         area = torchvision.ops.box_area(boxes)
-        img_key = torch.as_tensor(id)
+        img_key = id
 
         target = {
             "boxes": boxes,
@@ -84,14 +84,14 @@ class ObjectDetectionDataset(Dataset):
 
         if self.transforms is not None:
 
-            sample = self.transforms(image=image, bboxes=target["boxes"], labels=target["labels"])
+            transforms = get_transform(self.transforms, height=image.shape[0], width=image.shape[1])
+
+            sample = transforms(image=image, bboxes=target["boxes"], labels=target["labels"])
 
             while len(sample["bboxes"]) == 0:
                 # retry until the bbox is acceptable
                 # self.log.info("Retrying target transforms.")
-                sample = self.transforms(
-                    image=image, bboxes=target["boxes"], labels=target["labels"]
-                )
+                sample = transforms(image=image, bboxes=target["boxes"], labels=target["labels"])
 
             image = sample["image"]
             target["boxes"] = torch.Tensor(sample["bboxes"])

@@ -17,9 +17,9 @@ def get_transform(train, width=1000, height=1000):
 
         return A.Compose(
             [
+                A.RandomCrop(width=width, height=height, p=1.0),
                 A.RandomBrightnessContrast(p=0.5),
                 A.Rotate(limit=(-20, 20), p=0.5),
-                A.RandomCrop(width=width, height=height, p=1.0),
                 A.GaussianBlur(blur_limit=(3, 5), sigma_limit=(0.1, 0.2), p=0.5),
                 ToTensorV2(p=1.0),
             ],

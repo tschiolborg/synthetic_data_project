@@ -2,6 +2,8 @@
 https://github.com/pytorch/vision/blob/main/torchvision/models/detection/faster_rcnn.py
 """
 
+from types import FunctionType
+
 import torch.nn.functional as F
 from torch import nn
 from torchvision.ops import MultiScaleRoIAlign
@@ -13,16 +15,18 @@ from torchvision.models.resnet import resnet50
 from torchvision.models.detection._utils import overwrite_eps
 from torchvision.models.detection.anchor_utils import AnchorGenerator
 from torchvision.models.detection.backbone_utils import (
-    _resnet_fpn_extractor,
+    BackboneWithFPN,
     _validate_trainable_layers,
-    _mobilenet_extractor,
 )
+
+# from torchvision.models.detection.backbone_utils import Back
 
 # from torchvision.models.detection.generalized_rcnn import GeneralizedRCNN
 from torchvision.models.detection.roi_heads import RoIHeads
 from torchvision.models.detection.rpn import RPNHead, RegionProposalNetwork
 from torchvision.models.detection.transform import GeneralizedRCNNTransform
-
+from torchvision.ops.feature_pyramid_network import LastLevelMaxPool, ExtraFPNBlock
+from torchvision.models import resnet, mobilenet
 
 import warnings
 from collections import OrderedDict
@@ -31,7 +35,7 @@ from typing import Tuple, List, Dict, Optional, Union
 import torch
 from torch import nn, Tensor
 
-from torchvision.utils import _log_api_usage_once
+# from torchvision.utils import _log_api_usage_once
 
 
 __all__ = [
@@ -703,3 +707,119 @@ def fasterrcnn_mobilenet_v3_large_fpn(
         trainable_backbone_layers=trainable_backbone_layers,
         **kwargs,
     )
+
+
+def _resnet_fpn_extractor(
+    backbone: resnet.ResNet,
+    trainable_layers: int,
+    returned_layers: Optional[List[int]] = None,
+    extra_blocks: Optional[ExtraFPNBlock] = None,
+) -> BackboneWithFPN:
+
+    # select layers that wont be frozen
+    if trainable_layers < 0 or trainable_layers > 5:
+        raise ValueError(f"Trainable layers should be in the range [0,5], got {trainable_layers}")
+    layers_to_train = ["layer4", "layer3", "layer2", "layer1", "conv1"][:trainable_layers]
+    if trainable_layers == 5:
+        layers_to_train.append("bn1")
+    for name, parameter in backbone.named_parameters():
+        if all([not name.startswith(layer) for layer in layers_to_train]):
+            parameter.requires_grad_(False)
+
+    if extra_blocks is None:
+        extra_blocks = LastLevelMaxPool()
+
+    if returned_layers is None:
+        returned_layers = [1, 2, 3, 4]
+    if min(returned_layers) <= 0 or max(returned_layers) >= 5:
+        raise ValueError(f"Each returned layer should be in the range [1,4]. Got {returned_layers}")
+    return_layers = {f"layer{k}": str(v) for v, k in enumerate(returned_layers)}
+
+    in_channels_stage2 = backbone.inplanes // 8
+    in_channels_list = [in_channels_stage2 * 2 ** (i - 1) for i in returned_layers]
+    out_channels = 256
+    return BackboneWithFPN(
+        backbone, return_layers, in_channels_list, out_channels, extra_blocks=extra_blocks
+    )
+
+
+def _mobilenet_extractor(
+    backbone: Union[mobilenet.MobileNetV2, mobilenet.MobileNetV3],
+    fpn: bool,
+    trainable_layers: int,
+    returned_layers: Optional[List[int]] = None,
+    extra_blocks: Optional[ExtraFPNBlock] = None,
+) -> nn.Module:
+    backbone = backbone.features
+    # Gather the indices of blocks which are strided. These are the locations of C1, ..., Cn-1 blocks.
+    # The first and last blocks are always included because they are the C0 (conv1) and Cn.
+    stage_indices = (
+        [0]
+        + [i for i, b in enumerate(backbone) if getattr(b, "_is_cn", False)]
+        + [len(backbone) - 1]
+    )
+    num_stages = len(stage_indices)
+
+    # find the index of the layer from which we wont freeze
+    if trainable_layers < 0 or trainable_layers > num_stages:
+        raise ValueError(
+            f"Trainable layers should be in the range [0,{num_stages}], got {trainable_layers} "
+        )
+    freeze_before = (
+        len(backbone) if trainable_layers == 0 else stage_indices[num_stages - trainable_layers]
+    )
+
+    for b in backbone[:freeze_before]:
+        for parameter in b.parameters():
+            parameter.requires_grad_(False)
+
+    out_channels = 256
+    if fpn:
+        if extra_blocks is None:
+            extra_blocks = LastLevelMaxPool()
+
+        if returned_layers is None:
+            returned_layers = [num_stages - 2, num_stages - 1]
+        if min(returned_layers) < 0 or max(returned_layers) >= num_stages:
+            raise ValueError(
+                f"Each returned layer should be in the range [0,{num_stages - 1}], got {returned_layers} "
+            )
+        return_layers = {f"{stage_indices[k]}": str(v) for v, k in enumerate(returned_layers)}
+
+        in_channels_list = [backbone[stage_indices[i]].out_channels for i in returned_layers]
+        return BackboneWithFPN(
+            backbone, return_layers, in_channels_list, out_channels, extra_blocks=extra_blocks
+        )
+    else:
+        m = nn.Sequential(
+            backbone,
+            # depthwise linear combination of channels to reduce their size
+            nn.Conv2d(backbone[-1].out_channels, out_channels, 1),
+        )
+        m.out_channels = out_channels  # type: ignore[assignment]
+        return
+
+
+def _log_api_usage_once(obj) -> None:
+
+    """
+    Logs API usage(module and name) within an organization.
+    In a large ecosystem, it's often useful to track the PyTorch and
+    TorchVision APIs usage. This API provides the similar functionality to the
+    logging module in the Python stdlib. It can be used for debugging purpose
+    to log which methods are used and by default it is inactive, unless the user
+    manually subscribes a logger via the `SetAPIUsageLogger method <https://github.com/pytorch/pytorch/blob/eb3b9fe719b21fae13c7a7cf3253f970290a573e/c10/util/Logging.cpp#L114>`_.
+    Please note it is triggered only once for the same API call within a process.
+    It does not collect any data from open-source users since it is no-op by default.
+    For more information, please refer to
+    * PyTorch note: https://pytorch.org/docs/stable/notes/large_scale_deployments.html#api-usage-logging;
+    * Logging policy: https://github.com/pytorch/vision/issues/5052;
+    Args:
+        obj (class instance or method): an object to extract info from.
+    """
+    if not obj.__module__.startswith("torchvision"):
+        return
+    name = obj.__class__.__name__
+    if isinstance(obj, FunctionType):
+        name = obj.__name__
+    torch._C._log_api_usage_once(f"{obj.__module__}.{name}")

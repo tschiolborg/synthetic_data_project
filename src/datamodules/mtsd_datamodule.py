@@ -96,7 +96,7 @@ class MtsdDataModule(LightningDataModule):
             images = [id for id in images if self._filter_id(id)]
 
         if self.cfg.training.debug:
-            images = images[:1000]
+            images = images[:100]
 
         return MyDataset(
             image_ids=images,
