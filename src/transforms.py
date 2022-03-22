@@ -53,3 +53,33 @@ def get_transform(train, width=1000, height=1000):
             ],
             bbox_params={"format": "pascal_voc", "label_fields": ["labels"]},
         )
+
+
+def safe_transform(train):
+    """
+    Transformation
+    """
+
+    if train:
+        return A.Compose(
+            [
+                A.RandomSizedBBoxSafeCrop(width=1000, height=1000, p=1.0),
+                A.RandomBrightnessContrast(p=0.5),
+                A.Rotate(limit=(-20, 20), p=0.5),
+                A.GaussianBlur(blur_limit=(3, 5), sigma_limit=(0.1, 0.2), p=0.5),
+                ToTensorV2(p=1.0),
+            ],
+            bbox_params={
+                "format": "pascal_voc",
+                "label_fields": ["labels"],
+                "min_area": 100,
+            },
+        )
+    else:
+        return A.Compose(
+            [
+                A.Resize(width=1000, height=1000, p=1.0),
+                ToTensorV2(p=1.0),
+            ],
+            bbox_params={"format": "pascal_voc", "label_fields": ["labels"]},
+        )

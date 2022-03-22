@@ -10,7 +10,7 @@ import torch
 import torchvision
 from torch.utils.data import Dataset
 from albumentations.core.composition import Compose
-from src.transforms import get_transform
+from src.transforms import get_transform, safe_transform
 from src.utils.load_files import load_image
 
 
@@ -88,17 +88,21 @@ class ObjectDetectionDataset(Dataset):
 
             sample = transforms(image=image, bboxes=target["boxes"], labels=target["labels"])
 
+            max_tries = 100
             while len(sample["bboxes"]) == 0:
                 # retry until the bbox is acceptable
                 # self.log.info("Retrying target transforms.")
                 sample = transforms(image=image, bboxes=target["boxes"], labels=target["labels"])
+
+                max_tries -= 1
+                if max_tries <= 0:
+                    transforms = safe_transform(self.transforms)
 
             image = sample["image"]
             target["boxes"] = torch.Tensor(sample["bboxes"])
             target["area"] = torchvision.ops.box_area(target["boxes"])
 
         else:
-            ## change this to albuementations
             image = torch.as_tensor(image, dtype=torch.float32)
 
         return image, target
