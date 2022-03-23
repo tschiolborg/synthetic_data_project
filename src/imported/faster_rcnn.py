@@ -64,6 +64,7 @@ class GeneralizedRCNN(nn.Module):
         self, backbone: nn.Module, rpn: nn.Module, roi_heads: nn.Module, transform: nn.Module
     ) -> None:
         super().__init__()
+
         _log_api_usage_once(self)
         self.transform = transform
         self.backbone = backbone
@@ -149,6 +150,8 @@ class GeneralizedRCNN(nn.Module):
         losses.update(detector_losses)
         losses.update(proposal_losses)
 
+        print(losses)
+        print(detections)
         """
         if torch.jit.is_scripting():
             if not self._has_warned:

@@ -4,6 +4,7 @@ outputs/
 data/*
 !data/classes/
 
+saved_models/
 
 logs/
 wandb/
