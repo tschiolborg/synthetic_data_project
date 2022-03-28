@@ -1,46 +1,38 @@
-datamodule:
+training:
+  only_detect: True
+  num_classes: 2
+  debug: false
+  gpus: 1
+  max_epochs: 50
+
+optimzer:
+  name: SGD
+  params:
+    lr: 0.001
+    momentum: 0.9
+    weight_decay: 0.0005
+
+lr_scheduler:
+  name: StepLR
+  params:
+    step_size: 10
+    gamma: 0.1
+
+dataset:
   train:
-    dir: ${oc.env:DATA}/MTSD/images/train
+    dir: ${oc.env:DATA}/GTSDB/train
     batch_size: 2
     num_workers: 4
-    pin_memory:
-    transforms: true
+    transforms: "1"
   val:
-    dir: ${oc.env:DATA}/MTSD/images/val
-    batch_size: 1
+    dir: ${oc.env:DATA}/GTSDB/val
+    batch_size: 2
     num_workers: 4
-    pin_memory:
-    transforms: false
+    transforms: "1"
   test:
-  anno_dir: ${oc.env:DATA}/MTSD/annotations
-  classes_path: ${oc.env:DATA}/classes/single2.json
-  num_classes: 2
-  include_negative_examples: false # should always be false untill "ispiano" is fixed
+  anno_file: ${oc.env:DATA}/GTSDB/gt.txt
 
-training:
-  debug: false
+utils:
+  log_dir: ${oc.env:ROOT}/logs/gtsdb/run_6/
+  model_dir: ${oc.env:ROOT}/saved_models/
 
-train:
-  lr: 0.005
-
-trainer:
-  gpus: 1
-  max_epochs: 10
-
-
-save_dir: ${oc.env:ROOT}/logs/
-
-model_checkpoint:
-  class_name: pytorch_lightning.callbacks.ModelCheckpoint
-  params:
-    monitor: "main_score"
-    save_top_k: 1
-    dirpath: "saved_models/"
-    filename: "epoch_{epoch:03d}"
-
-early_stopping:
-  class_name: pl.callbacks.EarlyStopping
-  params:
-    monitor: "main_score"
-    patience: 10
-    # mode: ${training.mode}

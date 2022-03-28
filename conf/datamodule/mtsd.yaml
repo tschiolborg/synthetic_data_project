@@ -1,6 +1,0 @@
-_target_: src.datamodules.mtsd_datamodule.MtsdDataModule
-
-dataset: 
-data_dir: ${data_dir} # data_dir is specified in config.yaml
-batch_size: 32
-num_workers: 4

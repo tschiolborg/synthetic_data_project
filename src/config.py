@@ -1,65 +1,54 @@
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Dict
 
 
 @dataclass
-class DatasetConfig:
-    use_single_annotation_file: bool
-    anno_dir: str
-    img_dir: str
-    classes: List[str]
-    label_map: Dict[str, int]
+class OptimizerConfing:
+    name: str
+    params: Dict
 
 
 @dataclass
-class DatamoduleConfig:
-    dataset: DatasetConfig
-    shuffle: bool
-    batch_size: int
-    num_workers: int
+class LrSchedulerConfig:
+    name: str
+    params: Dict
 
 
 @dataclass
-class ModelConfig:
+class TrainingConfig:
+    only_detect: bool
     num_classes: int
-    lr: float
-
-
-@dataclass
-class TrainerConfig:
+    debug: bool
     gpus: int
     max_epochs: int
 
 
 @dataclass
+class DatasetConfig:
+    dir: str
+    batch_size: int
+    num_workers: int
+    transforms: str
+
+
+@dataclass
+class DatamoduleConfig:
+    train: DatasetConfig
+    val: DatasetConfig
+    test: DatasetConfig
+    anno_file: str
+
+
+@dataclass
+class UtilsConfig:
+    log_dir: str
+    model_dir: str
+
+
+@dataclass
 class Config:
-    model = ModelConfig
-    datamodule: DatamoduleConfig
-    trainer: TrainerConfig
-
-
-
-
-'''
-
-cs = ConfigStore.instance()
-cs.store(name="config", node=Config)
-
-# Model definitition
-cs.store(group="model", name="simple_mlp", node=ObjectConf)
-
-# Dataset definitition
-cs.store(group="dataset", name="mnist", node=DatasetConf)
-
-# Optimizers definitition
-cs.store(group="optimizers", name="adam", node=OptimizerConf)
-
-# Training definitition
-cs.store(group="trainer", name="debugging", node=ObjectConf)
-
-# Logging Entities
-cs.store(group="loggers", name="thomas-chaton", node=LoggersConf)
-
-
-'''
-
+    training: TrainingConfig
+    optimizer: OptimizerConfing
+    lr_scheduler: LrSchedulerConfig
+    dataset: DatamoduleConfig
+    utils: UtilsConfig

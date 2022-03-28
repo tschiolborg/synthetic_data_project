@@ -1,0 +1,46 @@
+datamodule:
+  train:
+    dir: ${oc.env:DATA}/MTSD/images/train
+    batch_size: 2
+    num_workers: 4
+    pin_memory:
+    transforms: true
+  val:
+    dir: ${oc.env:DATA}/MTSD/images/val
+    batch_size: 1
+    num_workers: 4
+    pin_memory:
+    transforms: false
+  test:
+  anno_dir: ${oc.env:DATA}/MTSD/annotations
+  classes_path: ${oc.env:DATA}/classes/single2.json
+  num_classes: 2
+  include_negative_examples: false # should always be false untill "ispiano" is fixed
+
+training:
+  debug: false
+
+train:
+  lr: 0.005
+
+trainer:
+  gpus: 1
+  max_epochs: 10
+
+
+save_dir: ${oc.env:ROOT}/logs/
+
+model_checkpoint:
+  class_name: pytorch_lightning.callbacks.ModelCheckpoint
+  params:
+    monitor: "main_score"
+    save_top_k: 1
+    dirpath: "saved_models/"
+    filename: "epoch_{epoch:03d}"
+
+early_stopping:
+  class_name: pl.callbacks.EarlyStopping
+  params:
+    monitor: "main_score"
+    patience: 10
+    # mode: ${training.mode}
