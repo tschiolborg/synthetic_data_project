@@ -24,21 +24,9 @@ pip install -r requirements.txt
 
 ```
 ├── conf                    <- Hydra configuration files
-│   ├── augmentations           <- Augmentations / transformations configs
-│   ├── callbacks               <- Callbacks configs
-│   ├── datamodule              <- Datamodule configs
-│   ├── debug                   <- Debugging configs
-│   ├── experiment              <- Experiment configs
-│   ├── hparams_search          <- Hyperparameter search configs
-│   ├── log_dir                 <- Logging directory configs
-│   ├── logger                  <- Logger configs
-│   ├── model                   <- Model configs
-│   ├── trainer                 <- Trainer configs
-│   ├── training                <- Training configs
 │   │
 │   ├── debug.yaml            <- Main config for debugging. Used for unit testing.
-│   ├── test.yaml             <- Main config for testing
-│   └── train.yaml            <- Main config for training
+│   └── config.yaml           <- Main config
 │
 ├── data                    <- Project data
 │
@@ -49,9 +37,6 @@ pip install -r requirements.txt
 ├── reports                 <- Reports, results, notes, pdfs, figures etc.
 │
 ├── src                     <- Source code
-│   ├── datamodules             <- Lightning datamodules
-│   ├── datasets                <- PyTorch Dataset classes
-│   ├── models                  <- Lightning models
 │   ├── utils                   <- Utility scripts
 │   │
 │   ├── config.py               <- dataclasses describing the config files

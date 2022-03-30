@@ -1,0 +1,4 @@
+warning--bicycles-crossing--g1
+information--parking--g45
+regulatory--stop--g10
+
