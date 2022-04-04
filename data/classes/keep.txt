@@ -24,6 +24,7 @@ warning--road-narrows-right--g1
 warning--wild-animals--g1
 warning--bicycles-crossing--g1
 warning--two-way-traffic--g1
+warning--roundabout--g1
 
 regulatory--keep-right--g1
 regulatory--keep-left--g1
