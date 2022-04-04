@@ -31,6 +31,3 @@ if __name__ == "__main__":
     class_key = "information--motorway--g1" if len(sys.argv) < 2 else sys.argv[1]
 
     show_class(file_in, class_key)
-
-
-

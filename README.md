@@ -42,17 +42,13 @@ pip install -r requirements.txt
 │   ├── config.py               <- dataclasses describing the config files
 │   └── train.py
 │
-├── tests                   <- Tests of any kind
-│   ├── visual                   <- Test visual by looking at images
-│   └── unit                     <- Unit tests
-│
 ├── train.py              <- Run training
 │
 ├── .env                      <- Private environment variables
 ├── .gitignore                <- List of files/folders ignored by git
 ├── requirements.txt          <- File for installing python dependencies
-├── setup.cfg                 <- Configuration of linters and pytest
-├── black.toml                <- Configuration of black
+├── setup.cfg                 <- Configuration of linters
+├── pyproject.toml                <- Configuration of black
 └── README.md
 ```
 
