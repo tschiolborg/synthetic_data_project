@@ -4,7 +4,7 @@ from albumentations.pytorch.transforms import ToTensorV2
 __all__ = ["get_transform"]
 
 
-def get_transform(train, width=1000, height=1000):
+def get_transform(train, width=1000, height=1000): 
     """
     Transformation
     """
