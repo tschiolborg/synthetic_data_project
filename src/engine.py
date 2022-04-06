@@ -22,7 +22,9 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, scaler=None, w
             optimizer, start_factor=warmup_factor, total_iters=warmup_iters
         )
 
-    for idx, (images, targets) in enumerate(tqdm(data_loader, desc=f"Epoch [{epoch+1}]", position=0, leave=True)):
+    for idx, (images, targets) in enumerate(
+        tqdm(data_loader, desc=f"Epoch [{epoch+1}]", position=0, leave=True)
+    ):
         # to device
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
@@ -31,7 +33,6 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, scaler=None, w
         with torch.cuda.amp.autocast(enabled=scaler is not None):
             loss_dict = model(images, targets)
             losses = sum(loss for loss in loss_dict.values())
-        loss_value = losses.item()
 
         optimizer.zero_grad()
         if scaler is not None:
@@ -71,8 +72,7 @@ def validate(model, data_loader, device, metric, epoch, writers=None):
     scores = metric.compute()
     metric.reset()
 
-
-    model.train() # to get loss
+    model.train()  # to get loss
 
     total_loss = []
 
@@ -120,5 +120,5 @@ def predict(img, model, device):
 
     pred = model([img.to(device)])[0]
 
-    keep = torchvision.ops.nms(pred['boxes'] , pred['scores'], 0.1)
+    keep = torchvision.ops.nms(pred["boxes"], pred["scores"], 0.1)
     return pred, keep

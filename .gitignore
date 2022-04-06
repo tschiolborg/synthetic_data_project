@@ -6,11 +6,15 @@ data/*
 
 saved_models/
 
+.old/
+
 logs/
-wandb/
 .env
 .autoenv
 .vscode/
+
+zzz.ipynb
+
 
 
 #### MAC

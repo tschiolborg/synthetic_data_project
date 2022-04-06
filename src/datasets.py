@@ -11,7 +11,16 @@ from PIL import Image
 
 
 class MTSD_Dataset(torch.utils.data.Dataset):
-    def __init__(self, image_dir, anno_dir, extension='jpg', transforms=None, only_detect=False, threshold=900, keep_other=False):
+    def __init__(
+        self,
+        image_dir,
+        anno_dir,
+        extension="jpg",
+        transforms=None,
+        only_detect=False,
+        threshold=900,
+        keep_other=False,
+    ):
         self.image_dir = image_dir
         self.anno_dir = anno_dir
         self.extension = extension
@@ -26,7 +35,6 @@ class MTSD_Dataset(torch.utils.data.Dataset):
         img = cv2.imread(img_path)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB).astype(np.float32)
         img /= 255
-        
 
         anno_path = os.path.join(self.anno_dir, f"{self.ids[idx]}.json")
         with open(anno_path) as f:
@@ -34,7 +42,9 @@ class MTSD_Dataset(torch.utils.data.Dataset):
 
         target = {"labels": [], "labels_str": [], "boxes": [], "areas": []}
 
-        for label, label_str, box, area in zip(anno["labels"], anno["labels_str"], anno["boxes"], anno["areas"]):
+        for label, label_str, box, area in zip(
+            anno["labels"], anno["labels_str"], anno["boxes"], anno["areas"]
+        ):
             if area >= self.threshold and (label_str != "other-sign" or self.keep_other):
                 target["labels"].append(label)
                 target["labels_str"].append(label_str)
@@ -48,7 +58,7 @@ class MTSD_Dataset(torch.utils.data.Dataset):
 
         target = {}
 
-        target["boxes"] = torch.as_tensor(_target['boxes'], dtype=torch.float32)
+        target["boxes"] = torch.as_tensor(_target["boxes"], dtype=torch.float32)
 
         target["labels"] = (
             torch.as_tensor(_target["labels"], dtype=torch.int64)
@@ -63,7 +73,9 @@ class MTSD_Dataset(torch.utils.data.Dataset):
 
             max_tries = 100
             while len(sample["bboxes"]) == 0:
-                sample = local_transforms(image=img, bboxes=target["boxes"], labels=target["labels"])
+                sample = local_transforms(
+                    image=img, bboxes=target["boxes"], labels=target["labels"]
+                )
 
                 max_tries -= 1
                 if max_tries <= 0:
@@ -74,19 +86,19 @@ class MTSD_Dataset(torch.utils.data.Dataset):
             target["labels"] = torch.as_tensor(sample["labels"], dtype=torch.int64)
         else:
             img = ToTensorV2()(img)
-        
+
         if len(target["boxes"]) == 0:
-            target["boxes"] = torch.empty((0,4), dtype=torch.float32)
+            target["boxes"] = torch.empty((0, 4), dtype=torch.float32)
             target["labels"] = torch.empty((0), dtype=torch.int64)
- 
+
         return img, target
- 
+
     def __len__(self):
         return len(self.ids)
 
+
 def collate_fn(batch):
     return tuple(zip(*batch))
-
 
 
 class GTSDB_Dataset(torch.utils.data.Dataset):
@@ -96,7 +108,9 @@ class GTSDB_Dataset(torch.utils.data.Dataset):
         self.only_detect = only_detect
         self.imgs = list(sorted(os.listdir(image_dir)))
 
-        anno_file = np.genfromtxt(os.path.join(anno_dir, 'gt.txt'),delimiter =';', dtype= None,encoding=None)
+        anno_file = np.genfromtxt(
+            os.path.join(anno_dir, "gt.txt"), delimiter=";", dtype=None, encoding=None
+        )
 
         anno_dict = {}
 
@@ -110,14 +124,14 @@ class GTSDB_Dataset(torch.utils.data.Dataset):
                 anno_dict[img_id]["labels"] = [label]
 
         self.anno_dict = anno_dict
- 
+
     def __getitem__(self, idx):
         img_path = os.path.join(self.image_dir, self.imgs[idx])
         img = Image.open(img_path).convert("RGB")
-        target = self.anno_dict.get(self.imgs[idx]) 
+        target = self.anno_dict.get(self.imgs[idx])
 
         if target is not None:
-            target["boxes"] = torch.as_tensor(target['boxes'], dtype=torch.float32)
+            target["boxes"] = torch.as_tensor(target["boxes"], dtype=torch.float32)
 
             target["labels"] = (
                 torch.as_tensor(target["labels"], dtype=torch.int64)
@@ -127,16 +141,16 @@ class GTSDB_Dataset(torch.utils.data.Dataset):
 
         else:
             target = {}
-            target["boxes"] = torch.empty((0,4), dtype=torch.float32)
+            target["boxes"] = torch.empty((0, 4), dtype=torch.float32)
             target["labels"] = torch.empty((0), dtype=torch.int64)
- 
+
         if self.transforms is not None:
             img = self.transforms(img)
         else:
             img = ToTensor()(img)
- 
+
         return img, target
- 
+
     def __len__(self):
         return len(self.imgs)
 

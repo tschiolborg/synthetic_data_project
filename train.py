@@ -1,23 +1,22 @@
 import os
 
-from torchvision.models.detection.faster_rcnn import fasterrcnn_resnet50_fpn, FastRCNNPredictor
-import torch
-from torchmetrics.detection.map import MeanAveragePrecision
 import hydra
-
+import torch
 from torch.utils.tensorboard import SummaryWriter
+from torchmetrics.detection.map import MeanAveragePrecision
+from torchvision.models.detection.faster_rcnn import FastRCNNPredictor, fasterrcnn_resnet50_fpn
 
-
+from src.config import Config
 from src.engine import train_one_epoch, validate
 from src.utils import Json_writer, collate_fn, load_data, load_lr_scheduler, load_optimizer
-from src.config import Config
-
 
 
 def train(cfg: Config):
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using {device}")
+
+    print(f"Directory: {os.getcwd()}")
 
     only_detect = cfg.training.only_detect
     num_classes = 2 if only_detect else cfg.training.num_classes
@@ -51,7 +50,7 @@ def train(cfg: Config):
     params = [p for p in model.parameters() if p.requires_grad]
     optimizer = load_optimizer(cfg, params)
     lr_scheduler = load_lr_scheduler(cfg, optimizer)
-    
+
     num_epochs = cfg.training.epochs
 
     val_metric = MeanAveragePrecision()
@@ -68,12 +67,16 @@ def train(cfg: Config):
     model = model.to(device)
 
     for epoch in range(num_epochs):
-        loss = train_one_epoch(model, optimizer, data_loader_train, device=device, epoch=epoch, writers=writers)
+        loss = train_one_epoch(
+            model, optimizer, data_loader_train, device=device, epoch=epoch, writers=writers
+        )
         train_losses += [loss]
 
         lr_scheduler.step()
 
-        loss, scores = validate(model, data_loader_val, device=device, metric=val_metric, epoch=epoch, writers=writers)
+        loss, scores = validate(
+            model, data_loader_val, device=device, metric=val_metric, epoch=epoch, writers=writers
+        )
         val_losses += [loss]
         val_scores += [scores]
 
@@ -82,29 +85,25 @@ def train(cfg: Config):
 
     model_dir = os.path.join(os.getcwd(), cfg.utils.model_dir)
     os.makedirs(model_dir, exist_ok=True)
-    torch.save(model, f'{model_dir}/model{num_epochs}.pkl')
-    torch.save(model.state_dict(), f'{model_dir}/model{num_epochs}.pth')
-    torch.save({
-        'epoch' : epoch,
-        "model_state_dict" : model.state_dict(),
-        'optimizer_state_dict' : optimizer.state_dict(),
-    }, f'{model_dir}/ckpt{num_epochs}.pth')
-
-    print(f"Saved at : {os.getcwd()}")
+    torch.save(model, f"{model_dir}/model{num_epochs}.pkl")
+    torch.save(model.state_dict(), f"{model_dir}/model{num_epochs}.pth")
+    torch.save(
+        {
+            "epoch": epoch,
+            "model_state_dict": model.state_dict(),
+            "optimizer_state_dict": optimizer.state_dict(),
+        },
+        f"{model_dir}/ckpt{num_epochs}.pth",
+    )
 
     return train_losses, val_losses, val_scores
-
-
-
 
 
 @hydra.main(config_path="conf/", config_name="config.yaml")
 def run_model(cfg: Config) -> None:
     train(cfg)
 
+
 if __name__ == "__main__":
     run_model()
-
-
-
 

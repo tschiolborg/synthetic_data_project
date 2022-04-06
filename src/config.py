@@ -41,7 +41,7 @@ class DatasetConfig:
     train: SubDatasetConfig
     val: SubDatasetConfig
     test: SubDatasetConfig
-    
+
 
 @dataclass
 class UtilsConfig:
