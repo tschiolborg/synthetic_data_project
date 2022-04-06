@@ -1,0 +1,33 @@
+training:
+  use_coco: True
+  only_detect: True
+  num_classes: 44
+  epochs: 1
+
+optimizer:
+  name: SGD
+  params:
+    lr: 0.001
+    momentum: 0.9
+    weight_decay: 0.0005
+
+lr_scheduler:
+  name: StepLR
+  params:
+    step_size: 30
+    gamma: 0.1
+
+dataset:
+  name: GTSDB
+  num_workers: 4
+  train:
+    batch_size: 2
+  val:
+    batch_size: 2
+  test:
+    batch_size: 2
+
+utils:
+  log_dir: logs
+  model_dir: saved_models
+

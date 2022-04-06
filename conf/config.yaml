@@ -1,11 +1,10 @@
 training:
+  use_coco: True
   only_detect: True
-  num_classes: 2
-  debug: false
-  gpus: 1
-  max_epochs: 50
+  num_classes: 54
+  epochs: 1
 
-optimzer:
+optimizer:
   name: SGD
   params:
     lr: 0.001
@@ -15,24 +14,29 @@ optimzer:
 lr_scheduler:
   name: StepLR
   params:
-    step_size: 10
+    step_size: 30
     gamma: 0.1
 
 dataset:
+  name: MTSD
+  num_workers: 4
   train:
-    dir: ${oc.env:DATA}/GTSDB/train
     batch_size: 2
-    num_workers: 4
-    transforms: "1"
+    transforms:
+      min_area: 900
+      img_size: 1000
   val:
-    dir: ${oc.env:DATA}/GTSDB/val
     batch_size: 2
-    num_workers: 4
-    transforms: "1"
+    transforms:
+      min_area: 900
+      img_size: 1000
   test:
-  anno_file: ${oc.env:DATA}/GTSDB/gt.txt
+    batch_size: 2
+    transforms:
+      min_area: 900
+      img_size: 1000
 
 utils:
-  log_dir: ${oc.env:ROOT}/logs/gtsdb/run_6/
-  model_dir: ${oc.env:ROOT}/saved_models/
+  log_dir: logs
+  model_dir: saved_models
 

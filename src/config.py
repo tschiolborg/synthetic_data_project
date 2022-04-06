@@ -16,28 +16,32 @@ class LrSchedulerConfig:
 
 @dataclass
 class TrainingConfig:
+    use_coco: bool
     only_detect: bool
     num_classes: int
-    debug: bool
-    gpus: int
-    max_epochs: int
+    epochs: int
+
+
+@dataclass
+class TransformsConfig:
+    min_area: int
+    img_size: int
+
+
+@dataclass
+class SubDatasetConfig:
+    batch_size: int
+    transforms: TransformsConfig
 
 
 @dataclass
 class DatasetConfig:
-    dir: str
-    batch_size: int
+    name: str
     num_workers: int
-    transforms: str
-
-
-@dataclass
-class DatamoduleConfig:
-    train: DatasetConfig
-    val: DatasetConfig
-    test: DatasetConfig
-    anno_file: str
-
+    train: SubDatasetConfig
+    val: SubDatasetConfig
+    test: SubDatasetConfig
+    
 
 @dataclass
 class UtilsConfig:
@@ -50,5 +54,6 @@ class Config:
     training: TrainingConfig
     optimizer: OptimizerConfing
     lr_scheduler: LrSchedulerConfig
-    dataset: DatamoduleConfig
+    dataset: DatasetConfig
     utils: UtilsConfig
+

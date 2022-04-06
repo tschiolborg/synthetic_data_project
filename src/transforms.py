@@ -1,85 +1,86 @@
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
+from torchvision import transforms as T
+import random
 
-__all__ = ["get_transform"]
+
+class Transforms():
+    def __init__(self, min_area_train=900, min_area_val=0, img_size_train=1000, img_size_val=None):
+        self.min_area_train = min_area_train
+        self.min_area_val = min_area_val
+        self.img_size_train = img_size_train
+        self.img_size_val = img_size_val
 
 
-def get_transform(train, width=1000, height=1000): 
-    """
-    Transformation
-    """
+    def get_transform(self, train):
+        if train:
+            return self._transform_train
+        else:
+            return self._transform_test
 
-    if train:
-        if width > 1000:
-            width = 1000
-        if height > 1000:
-            height = 1000
+
+    def _transform_train(self, width=1000, height=1000):
+        if self.img_size_train is not None:
+            width, height = self._set_dim(width, height, self.img_size_train)
 
         return A.Compose(
             [
-                A.RandomCrop(width=width, height=height, p=1.0),
+                A.RandomSizedBBoxSafeCrop(width=width, height=height, p=1.0),
                 A.RandomBrightnessContrast(p=0.5),
-                A.Rotate(limit=(-20, 20), p=0.5),
                 A.GaussianBlur(blur_limit=(3, 5), sigma_limit=(0.1, 0.2), p=0.5),
                 ToTensorV2(p=1.0),
             ],
             bbox_params={
                 "format": "pascal_voc",
                 "label_fields": ["labels"],
-                "min_area": 100,
+                "min_area": self.min_area_train,
             },
         )
-    else:
-        if width >= 2024 or height >= 2024:
+
+
+    def _transform_test(self, width=1000, height=1000):
+        if self.img_size_val is not None:
+            width, height = self._set_dim(width, height, self.img_size_val)
+        
+        do_crop = 1 if self.img_size_val is not None else 0
+
+        random.seed(123)
+
+        return A.Compose(
+            [
+                A.RandomSizedBBoxSafeCrop(width=width, height=height, p=do_crop),
+                ToTensorV2(p=1.0),
+            ],
+            bbox_params={
+                "format": "pascal_voc",
+                "label_fields": ["labels"],
+                "min_area": self.min_area_val,
+            },
+        )
+
+
+    def _set_dim(self, width, height, target_size):
+
+        if width > target_size or height > target_size:
             if width >= height:
-                if width > 4000:
-                    height = height * 4000 // width
-                    width = 4000
-                else:
-                    height = height * 2024 // width
-                    width = 2024
+                height = height * target_size // width
+                width = target_size
             else:
-                if height > 4000:
-                    width = width * 4000 // height
-                    height = 4000
-                else:
-                    width = width * 2040 // height
-                    height = 2040
-
-        return A.Compose(
-            [
-                A.Resize(width=width, height=height, p=1.0),
-                ToTensorV2(p=1.0),
-            ],
-            bbox_params={"format": "pascal_voc", "label_fields": ["labels"]},
-        )
+                width = width * target_size // height
+                height = target_size
+        
+        return width, height
 
 
-def safe_transform(train):
-    """
-    Transformation
-    """
+    def get_transform_gtsdb(self, train):
+        if train:
+            return T.Compose(
+                [
+                    T.ColorJitter(brightness=0.5, contrast=0.5),
+                    T.GaussianBlur(kernel_size=(3, 11), sigma=(0.1, 3)),
+                    T.ToTensor(),
+                ]
+            )
+        else:
+            return T.Compose([T.ToTensor()])
 
-    if train:
-        return A.Compose(
-            [
-                A.RandomSizedBBoxSafeCrop(width=1000, height=1000, p=1.0),
-                A.RandomBrightnessContrast(p=0.5),
-                A.Rotate(limit=(-20, 20), p=0.5),
-                A.GaussianBlur(blur_limit=(3, 5), sigma_limit=(0.1, 0.2), p=0.5),
-                ToTensorV2(p=1.0),
-            ],
-            bbox_params={
-                "format": "pascal_voc",
-                "label_fields": ["labels"],
-                "min_area": 100,
-            },
-        )
-    else:
-        return A.Compose(
-            [
-                A.Resize(width=1000, height=1000, p=1.0),
-                ToTensorV2(p=1.0),
-            ],
-            bbox_params={"format": "pascal_voc", "label_fields": ["labels"]},
-        )
