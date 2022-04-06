@@ -1,0 +1,16 @@
+testing:
+  only_detect: True
+  num_classes: 54
+
+dataset:
+  name: MTSD
+  num_workers: 4
+  test:
+    batch_size: 2
+    transforms:
+      min_area: 900
+      img_size: 1000
+
+
+model_dir: C:\Users\saibo\Documents\bachelor_project\outputs\2022-04-06\18-14-36\saved_models\model10.pkl
+

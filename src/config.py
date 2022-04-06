@@ -57,3 +57,10 @@ class Config:
     dataset: DatasetConfig
     utils: UtilsConfig
 
+
+@dataclass
+class ConfigTest:
+    testing: TrainingConfig
+    dataset: DatasetConfig
+    model_dir: str
+

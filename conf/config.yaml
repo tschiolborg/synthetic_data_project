@@ -1,8 +1,8 @@
 training:
-  use_coco: True
+  use_coco: False
   only_detect: True
   num_classes: 54
-  epochs: 10
+  epochs: 20
 
 optimizer:
   name: SGD

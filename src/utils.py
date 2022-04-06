@@ -8,7 +8,7 @@ import torchvision.transforms as T
 import torch
 
 from .engine import predict
-from .config import Config
+from .config import Config, ConfigTest
 from .datasets import MTSD_Dataset, GTSDB_Dataset
 from .transforms import Transforms
 
@@ -20,8 +20,8 @@ dotenv.load_dotenv(override=True)
 def load_data(cfg: Config):
     my_transforms = Transforms(
         min_area_train=cfg.dataset.train.transforms.min_area,
-        min_area_val=cfg.dataset.train.transforms.img_size,
-        img_size_train=cfg.dataset.val.transforms.min_area,
+        img_size_train=cfg.dataset.train.transforms.img_size,
+        min_area_val=cfg.dataset.val.transforms.min_area,
         img_size_val=cfg.dataset.val.transforms.img_size,
     )
 
@@ -70,6 +70,47 @@ def load_data(cfg: Config):
         raise Exception(f"error cannot find dataset: {cfg.dataset.name}")
 
     return dataset_train, dataset_val
+
+
+def load_data_test(cfg: ConfigTest):
+    my_transforms = Transforms(
+        min_area_val=cfg.dataset.test.transforms.min_area,
+        img_size_val=cfg.dataset.test.transforms.img_size,
+    )
+
+    if cfg.dataset.name == "MTSD":
+
+        MTSD = os.getenv("MTSD")
+        if not MTSD:
+            raise Exception('Not able to find "MTSD" environment variable')
+
+        img_dir = os.path.join(MTSD, "images")
+        anno_test = os.path.join(MTSD, "anno_val")
+
+        dataset_test = MTSD_Dataset(
+            img_dir,
+            anno_test,
+            transforms=my_transforms.get_transform(False),
+            only_detect=cfg.testing.only_detect,
+        )
+
+    elif cfg.dataset.name == "GTSDB":
+
+        GTSDB = os.getenv("GTSDB")
+        if not GTSDB:
+            raise Exception('Not able to find "MTSD" environment variable')
+
+        dataset_test = GTSDB_Dataset(
+            os.path.join(GTSDB, "images"),
+            GTSDB,
+            transforms=my_transforms.get_transform_gtsdb(False),
+            only_detect=cfg.testing.only_detect,
+        )
+    else:
+        raise Exception(f"error cannot find dataset: {cfg.dataset.name}")
+
+    return dataset_test
+
 
 
 def load_optimizer(cfg: Config, params):
