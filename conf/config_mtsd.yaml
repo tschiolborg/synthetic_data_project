@@ -1,0 +1,42 @@
+training:
+  use_coco: True
+  only_detect: True
+  num_classes: 54
+  epochs: 1
+
+optimizer:
+  name: SGD
+  params:
+    lr: 0.001
+    momentum: 0.9
+    weight_decay: 0.0005
+
+lr_scheduler:
+  name: StepLR
+  params:
+    step_size: 30
+    gamma: 0.1
+
+dataset:
+  name: MTSD
+  num_workers: 4
+  train:
+    batch_size: 2
+    transforms:
+      min_area: 900
+      img_size: 1000
+  val:
+    batch_size: 2
+    transforms:
+      min_area: 900
+      img_size: 1000
+  test:
+    batch_size: 2
+    transforms:
+      min_area: 900
+      img_size: 1000
+
+utils:
+  log_dir: logs
+  model_dir: saved_models
+
