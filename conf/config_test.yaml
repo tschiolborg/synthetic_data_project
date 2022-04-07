@@ -3,7 +3,7 @@ testing:
   num_classes: 54
 
 dataset:
-  name: MTSD
+  name: GTSDB
   num_workers: 4
   test:
     batch_size: 2
@@ -12,5 +12,5 @@ dataset:
       img_size: 1000
 
 
-model_dir: C:\Users\saibo\Documents\bachelor_project\outputs\2022-04-06\18-14-36\saved_models\model10.pkl
+model_dir: C:\Users\saibo\Documents\bachelor_project\outputs\2022-04-06\23-45-06\saved_models\model20.pkl
 

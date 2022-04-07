@@ -96,6 +96,10 @@ def train(cfg: Config):
         f"{model_dir}/ckpt{num_epochs}.pth",
     )
 
+    print(val_scores[-1])
+
+    print(f"\nSaved at: {os.getcwd()}")
+
     return train_losses, val_losses, val_scores
 
 
