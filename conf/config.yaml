@@ -1,8 +1,8 @@
 training:
-  use_coco: False
+  use_coco: True
   only_detect: True
   num_classes: 54
-  epochs: 20
+  epochs: 2
 
 optimizer:
   name: SGD
@@ -18,7 +18,7 @@ lr_scheduler:
     gamma: 0.1
 
 dataset:
-  name: MTSD
+  name: GTSDB
   num_workers: 4
   train:
     batch_size: 2
@@ -39,4 +39,10 @@ dataset:
 utils:
   log_dir: logs
   model_dir: saved_models
+
+checkpoint:
+  resume: True
+  model_path: C:\Users\saibo\Documents\bachelor_project\outputs\2022-04-07\19-48-07\saved_models\model1.pkl
+  ckpt_path: C:\Users\saibo\Documents\bachelor_project\outputs\2022-04-07\19-48-07\saved_models\ckpt1.pth
+  log_path: C:\Users\saibo\Documents\bachelor_project\outputs\2022-04-07\19-48-07\logs\run.json
 

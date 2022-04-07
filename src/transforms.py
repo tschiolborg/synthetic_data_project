@@ -75,4 +75,3 @@ class Transforms:
             )
         else:
             return T.Compose([T.ToTensor()])
-

@@ -112,7 +112,6 @@ def load_data_test(cfg: ConfigTest):
     return dataset_test
 
 
-
 def load_optimizer(cfg: Config, params):
     if cfg.optimizer.name == "SGD":
         return torch.optim.SGD(
@@ -137,13 +136,8 @@ def load_lr_scheduler(cfg: Config, optimizer):
 
 
 class Json_writer:
-    def __init__(self, log_file, reset=True):
-        if reset:
-            self.data = {}
-        else:
-            with open(log_file) as f:
-                self.data = json.load(f)
-
+    def __init__(self, log_file):
+        self.data = {}
         self.log_file = log_file
 
     def add_scalar(self, tag, value, epoch):
@@ -170,6 +164,10 @@ class Json_writer:
     def flush(self):
         with open(self.log_file, "w+") as f:
             json.dump(self.data, f, indent=6)
+
+    def load_data(self, log_file):
+        with open(log_file) as f:
+            self.data = json.load(f)
 
 
 def collate_fn(batch):
@@ -277,4 +275,3 @@ def predict_and_display(img, model, classes):
         keep.cpu(),
         classes=classes,
     )
-

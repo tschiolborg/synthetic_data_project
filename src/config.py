@@ -50,12 +50,21 @@ class UtilsConfig:
 
 
 @dataclass
+class CheckpointConfig:
+    resume: bool
+    model_path: str
+    ckpt_path: str
+    log_path: str
+
+
+@dataclass
 class Config:
     training: TrainingConfig
     optimizer: OptimizerConfing
     lr_scheduler: LrSchedulerConfig
     dataset: DatasetConfig
     utils: UtilsConfig
+    checkpoint: CheckpointConfig
 
 
 @dataclass
@@ -63,4 +72,3 @@ class ConfigTest:
     testing: TrainingConfig
     dataset: DatasetConfig
     model_dir: str
-

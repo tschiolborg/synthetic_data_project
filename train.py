@@ -38,18 +38,22 @@ def train(cfg: Config):
         collate_fn=collate_fn,
     )
 
-    if cfg.training.use_coco:
-        model = fasterrcnn_resnet50_fpn(pretrained=True)
-        in_features = model.roi_heads.box_predictor.cls_score.in_features
-        model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+    if cfg.checkpoint.resume:
+        model = torch.load(cfg.checkpoint.model_path)
     else:
-        model = fasterrcnn_resnet50_fpn(
-            pretrained=False, num_classes=num_classes, pretrained_backbone=True
-        )
+        if cfg.training.use_coco:
+            model = fasterrcnn_resnet50_fpn(pretrained=True)
+            in_features = model.roi_heads.box_predictor.cls_score.in_features
+            model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
+        else:
+            model = fasterrcnn_resnet50_fpn(
+                pretrained=False, num_classes=num_classes, pretrained_backbone=True
+            )
 
     params = [p for p in model.parameters() if p.requires_grad]
     optimizer = load_optimizer(cfg, params)
     lr_scheduler = load_lr_scheduler(cfg, optimizer)
+    start_epoch = 0
 
     num_epochs = cfg.training.epochs
 
@@ -64,9 +68,17 @@ def train(cfg: Config):
         Json_writer(log_file=os.path.join(os.getcwd(), cfg.utils.log_dir, "run.json")),
     ]
 
+    if cfg.checkpoint.resume:
+        checkpoint = torch.load(cfg.checkpoint.ckpt_path)
+        model.load_state_dict(checkpoint["model_state_dict"])
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        lr_scheduler.load_state_dict(checkpoint["lr_scheduler_state_dict"])
+        start_epoch = checkpoint["epoch"] + 1
+        writers[1].load_data(cfg.checkpoint.log_path)
+
     model = model.to(device)
 
-    for epoch in range(num_epochs):
+    for epoch in range(start_epoch, num_epochs):
         loss = train_one_epoch(
             model, optimizer, data_loader_train, device=device, epoch=epoch, writers=writers
         )
@@ -86,12 +98,12 @@ def train(cfg: Config):
     model_dir = os.path.join(os.getcwd(), cfg.utils.model_dir)
     os.makedirs(model_dir, exist_ok=True)
     torch.save(model, f"{model_dir}/model{num_epochs}.pkl")
-    torch.save(model.state_dict(), f"{model_dir}/model{num_epochs}.pth")
     torch.save(
         {
             "epoch": epoch,
             "model_state_dict": model.state_dict(),
             "optimizer_state_dict": optimizer.state_dict(),
+            "lr_scheduler_state_dict": lr_scheduler.state_dict(),
         },
         f"{model_dir}/ckpt{num_epochs}.pth",
     )
@@ -110,4 +122,3 @@ def run_model(cfg: Config) -> None:
 
 if __name__ == "__main__":
     run_model()
-

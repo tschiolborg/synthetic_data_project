@@ -9,11 +9,9 @@ from src.engine import evaluate
 from src.utils import collate_fn, load_data_test
 
 
-
 def test():
     with hydra.initialize(config_path="conf"):
-        cfg : ConfigTest = hydra.compose(config_name="config_test.yaml")
-    
+        cfg: ConfigTest = hydra.compose(config_name="config_test.yaml")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using {device}")
@@ -30,7 +28,7 @@ def test():
         collate_fn=collate_fn,
     )
 
-    model = model = torch.load(cfg.model_dir) 
+    model = model = torch.load(cfg.model_dir)
 
     metric = MeanAveragePrecision()
 
@@ -40,11 +38,8 @@ def test():
 
     print(score)
 
-
     return score
-
 
 
 if __name__ == "__main__":
     test()
-
