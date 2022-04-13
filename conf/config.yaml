@@ -2,39 +2,37 @@ training:
   use_coco: True
   only_detect: True
   num_classes: 54
-  epochs: 2
+  epochs: 6
 
 optimizer:
   name: SGD
   params:
-    lr: 0.001
+    lr: 0.01
     momentum: 0.9
     weight_decay: 0.0005
 
 lr_scheduler:
   name: StepLR
   params:
-    step_size: 30
+    step_size: 10
     gamma: 0.1
 
 dataset:
-  name: GTSDB
+  name: MTSD
   num_workers: 4
+  threshold: 900
+  keep_other: False
   train:
-    batch_size: 2
+    batch_size: 4
     transforms:
-      min_area: 900
+      min_area: 0
       img_size: 1000
   val:
     batch_size: 2
     transforms:
-      min_area: 900
-      img_size: 1000
+      min_area: 0
+      img_size: 
   test:
-    batch_size: 2
-    transforms:
-      min_area: 900
-      img_size: 1000
 
 utils:
   log_dir: logs
@@ -42,7 +40,7 @@ utils:
 
 checkpoint:
   resume: True
-  model_path: C:\Users\saibo\Documents\bachelor_project\outputs\2022-04-07\19-48-07\saved_models\model1.pkl
-  ckpt_path: C:\Users\saibo\Documents\bachelor_project\outputs\2022-04-07\19-48-07\saved_models\ckpt1.pth
-  log_path: C:\Users\saibo\Documents\bachelor_project\outputs\2022-04-07\19-48-07\logs\run.json
+  model_path: C:\Users\saibo\Documents\bachelor_project\outputs\2022-04-12\22-08-41\saved_models\model.pkl
+  ckpt_path: C:\Users\saibo\Documents\bachelor_project\outputs\2022-04-12\22-08-41\saved_models\ckpt.pth
+  log_path: C:\Users\saibo\Documents\bachelor_project\outputs\2022-04-12\22-08-41\logs\run.json
 

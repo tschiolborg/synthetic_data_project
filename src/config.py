@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Dict
 
+from cv2 import threshold
+
 
 @dataclass
 class OptimizerConfing:
@@ -38,6 +40,8 @@ class SubDatasetConfig:
 class DatasetConfig:
     name: str
     num_workers: int
+    threshold: int
+    keep_other: bool
     train: SubDatasetConfig
     val: SubDatasetConfig
     test: SubDatasetConfig

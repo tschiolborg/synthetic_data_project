@@ -28,7 +28,7 @@ def test():
         collate_fn=collate_fn,
     )
 
-    model = model = torch.load(cfg.model_dir)
+    model = torch.load(cfg.model_dir)
 
     metric = MeanAveragePrecision()
 

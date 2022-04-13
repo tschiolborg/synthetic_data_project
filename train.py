@@ -1,4 +1,5 @@
 import os
+from cv2 import threshold
 
 import hydra
 import torch
@@ -42,12 +43,12 @@ def train(cfg: Config):
         model = torch.load(cfg.checkpoint.model_path)
     else:
         if cfg.training.use_coco:
-            model = fasterrcnn_resnet50_fpn(pretrained=True)
+            model = fasterrcnn_resnet50_fpn(pretrained=True, max_size=4000)
             in_features = model.roi_heads.box_predictor.cls_score.in_features
             model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
         else:
             model = fasterrcnn_resnet50_fpn(
-                pretrained=False, num_classes=num_classes, pretrained_backbone=True
+                pretrained=False, num_classes=num_classes, pretrained_backbone=True, max_size=4000
             )
 
     params = [p for p in model.parameters() if p.requires_grad]
@@ -97,7 +98,7 @@ def train(cfg: Config):
 
     model_dir = os.path.join(os.getcwd(), cfg.utils.model_dir)
     os.makedirs(model_dir, exist_ok=True)
-    torch.save(model, f"{model_dir}/model{num_epochs}.pkl")
+    torch.save(model, f"{model_dir}/model.pkl")
     torch.save(
         {
             "epoch": epoch,
@@ -105,7 +106,7 @@ def train(cfg: Config):
             "optimizer_state_dict": optimizer.state_dict(),
             "lr_scheduler_state_dict": lr_scheduler.state_dict(),
         },
-        f"{model_dir}/ckpt{num_epochs}.pth",
+        f"{model_dir}/ckpt.pth",
     )
 
     print(val_scores[-1])

@@ -40,12 +40,16 @@ def load_data(cfg: Config):
             anno_train,
             transforms=my_transforms.get_transform(True),
             only_detect=cfg.training.only_detect,
+            threshold=cfg.dataset.threshold,
+            keep_other=cfg.dataset.keep_other,
         )
         dataset_val = MTSD_Dataset(
             img_dir,
             anno_val,
             transforms=my_transforms.get_transform(False),
             only_detect=cfg.training.only_detect,
+            threshold=cfg.dataset.threshold,
+            keep_other=cfg.dataset.keep_other,
         )
 
     elif cfg.dataset.name == "GTSDB":
@@ -168,6 +172,7 @@ class Json_writer:
     def load_data(self, log_file):
         with open(log_file) as f:
             self.data = json.load(f)
+        return self
 
 
 def collate_fn(batch):

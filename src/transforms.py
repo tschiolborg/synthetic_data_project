@@ -19,7 +19,9 @@ class Transforms:
 
     def _transform_train(self, width=1000, height=1000):
         if self.img_size_train is not None:
-            width, height = self._set_dim(width, height, self.img_size_train)
+            #     width, height = self._set_dim(width, height, self.img_size_train)
+            width = self.img_size_train
+            height = self.img_size_train
 
         return A.Compose(
             [
@@ -32,19 +34,25 @@ class Transforms:
                 "format": "pascal_voc",
                 "label_fields": ["labels"],
                 "min_area": self.min_area_train,
+                "min_visibility": 0.7,
             },
         )
 
     def _transform_test(self, width=1000, height=1000):
-        if self.img_size_val is not None:
-            width, height = self._set_dim(width, height, self.img_size_val)
+        do_crop = 1
 
-        do_crop = 1 if self.img_size_val is not None else 0
+        if width > 4000 or height > 4000:
+            max_size = 4000
+        elif width > 2048 or height > 2048:
+            max_size = 2048
+        else:
+            max_size = 1000
+            do_crop = 0
 
         random.seed(123)
 
         return A.Compose(
-            [A.RandomSizedBBoxSafeCrop(width=width, height=height, p=do_crop), ToTensorV2(p=1.0),],
+            [A.LongestMaxSize(max_size=max_size, p=do_crop), ToTensorV2(p=1.0),],
             bbox_params={
                 "format": "pascal_voc",
                 "label_fields": ["labels"],
