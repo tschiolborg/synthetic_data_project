@@ -1,5 +1,4 @@
 import os
-from cv2 import threshold
 
 import hydra
 import torch
@@ -40,7 +39,7 @@ def train(cfg: Config):
     )
 
     if cfg.checkpoint.resume:
-        model = torch.load(cfg.checkpoint.model_path)
+        model = torch.load(os.path.join(cfg.checkpoint.path, cfg.utils.model_dir, "model.pkl"))
     else:
         if cfg.training.use_coco:
             model = fasterrcnn_resnet50_fpn(pretrained=True, max_size=4000)
@@ -70,12 +69,12 @@ def train(cfg: Config):
     ]
 
     if cfg.checkpoint.resume:
-        checkpoint = torch.load(cfg.checkpoint.ckpt_path)
+        checkpoint = torch.load(os.path.join(cfg.checkpoint.path, cfg.utils.model_dir, "ckpt.pth"))
         model.load_state_dict(checkpoint["model_state_dict"])
         optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         lr_scheduler.load_state_dict(checkpoint["lr_scheduler_state_dict"])
         start_epoch = checkpoint["epoch"] + 1
-        writers[1].load_data(cfg.checkpoint.log_path)
+        writers[1].load_data(os.path.join(cfg.checkpoint.path, cfg.utils.log_dir, "run.json"))
 
     model = model.to(device)
 

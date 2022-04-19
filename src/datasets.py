@@ -1,13 +1,13 @@
-import os
 import json
+import os
 from pathlib import Path
 
+import cv2
 import numpy as np
 import torch
-import cv2
 from albumentations.pytorch.transforms import ToTensorV2
-from torchvision.transforms import ToTensor
 from PIL import Image
+from torchvision.transforms import ToTensor
 
 
 class MTSD_Dataset(torch.utils.data.Dataset):
@@ -102,19 +102,30 @@ def collate_fn(batch):
 
 
 class GTSDB_Dataset(torch.utils.data.Dataset):
-    def __init__(self, image_dir, anno_dir, transforms=None, only_detect=False):
+    def __init__(self, image_dir, anno_dir, transforms=None, only_detect=False, mtsd_labels=None):
         self.image_dir = image_dir
         self.transforms = transforms
         self.only_detect = only_detect
+        self.mtsd_labels = mtsd_labels
         self.imgs = list(sorted(os.listdir(image_dir)))
 
         anno_file = np.genfromtxt(
             os.path.join(anno_dir, "gt.txt"), delimiter=";", dtype=None, encoding=None
         )
 
+        if self.mtsd_labels is not None:
+            with open(self.mtsd_labels) as f:
+                classes_map = json.load(f)
+                classes_map = {int(k): v for (k, v) in classes_map.items()}
+
         anno_dict = {}
 
         for img_id, xmin, ymin, xmax, ymax, label in anno_file:
+            if self.mtsd_labels is not None:
+                label = classes_map[label]
+            if label is None:
+                continue
+
             if img_id in anno_dict:
                 anno_dict[img_id]["boxes"] += [[xmin, ymin, xmax, ymax]]
                 anno_dict[img_id]["labels"] += [label]

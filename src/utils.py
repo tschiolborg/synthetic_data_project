@@ -1,23 +1,28 @@
 import json
 import os
 
-import numpy as np
-import matplotlib.pyplot as plt
-from PIL import ImageDraw, ImageColor, ImageFont
-import torchvision.transforms as T
-import torch
-
-from .engine import predict
-from .config import Config, ConfigTest
-from .datasets import MTSD_Dataset, GTSDB_Dataset
-from .transforms import Transforms
-
 import dotenv
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+import torchvision.transforms as T
+from PIL import ImageColor, ImageDraw, ImageFont
+
+from .config import Config, ConfigTest
+from .datasets import GTSDB_Dataset, MTSD_Dataset
+from .engine import predict
+from .transforms import Transforms
 
 dotenv.load_dotenv(override=True)
 
 
 def load_data(cfg: Config):
+    """
+    Load and return training and validation datasets
+
+    cfg: config file, see config.py
+    cfg.dataset.name: either "MTSD" or "GTSDB"
+    """
     my_transforms = Transforms(
         min_area_train=cfg.dataset.train.transforms.min_area,
         img_size_train=cfg.dataset.train.transforms.img_size,
@@ -56,19 +61,21 @@ def load_data(cfg: Config):
 
         GTSDB = os.getenv("GTSDB")
         if not GTSDB:
-            raise Exception('Not able to find "MTSD" environment variable')
+            raise Exception('Not able to find "GTSDB" environment variable')
 
         dataset_train = GTSDB_Dataset(
             os.path.join(GTSDB, "train"),
             GTSDB,
             transforms=my_transforms.get_transform_gtsdb(True),
             only_detect=cfg.training.only_detect,
+            mtsd_labels=cfg.dataset.mtsd_labels,
         )
         dataset_val = GTSDB_Dataset(
             os.path.join(GTSDB, "test"),
             GTSDB,
             transforms=my_transforms.get_transform_gtsdb(False),
             only_detect=cfg.training.only_detect,
+            mtsd_labels=cfg.dataset.mtsd_labels,
         )
     else:
         raise Exception(f"error cannot find dataset: {cfg.dataset.name}")
@@ -77,6 +84,12 @@ def load_data(cfg: Config):
 
 
 def load_data_test(cfg: ConfigTest):
+    """
+    Load and return test dataset
+
+    cfg: config file, see config.py
+    cfg.dataset.name: either "MTSD" or "GTSDB"
+    """
     my_transforms = Transforms(
         min_area_val=cfg.dataset.test.transforms.min_area,
         img_size_val=cfg.dataset.test.transforms.img_size,
@@ -102,13 +115,14 @@ def load_data_test(cfg: ConfigTest):
 
         GTSDB = os.getenv("GTSDB")
         if not GTSDB:
-            raise Exception('Not able to find "MTSD" environment variable')
+            raise Exception('Not able to find "GTSDB" environment variable')
 
         dataset_test = GTSDB_Dataset(
             os.path.join(GTSDB, "images"),
             GTSDB,
             transforms=my_transforms.get_transform_gtsdb(False),
             only_detect=cfg.testing.only_detect,
+            mtsd_labels=cfg.dataset.mtsd_labels,
         )
     else:
         raise Exception(f"error cannot find dataset: {cfg.dataset.name}")

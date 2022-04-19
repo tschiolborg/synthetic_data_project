@@ -42,6 +42,7 @@ class DatasetConfig:
     num_workers: int
     threshold: int
     keep_other: bool
+    mtsd_labels: str
     train: SubDatasetConfig
     val: SubDatasetConfig
     test: SubDatasetConfig
@@ -56,9 +57,7 @@ class UtilsConfig:
 @dataclass
 class CheckpointConfig:
     resume: bool
-    model_path: str
-    ckpt_path: str
-    log_path: str
+    path: str
 
 
 @dataclass

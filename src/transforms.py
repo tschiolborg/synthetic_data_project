@@ -1,7 +1,8 @@
+import random
+
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 from torchvision import transforms as T
-import random
 
 
 class Transforms:
