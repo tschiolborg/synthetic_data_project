@@ -8,7 +8,15 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor, fasterrc
 
 from src.config import Config
 from src.engine import train_one_epoch, validate
-from src.utils import Json_writer, collate_fn, load_data, load_lr_scheduler, load_optimizer
+from src.utils import (
+    Json_writer,
+    collate_fn,
+    load_data,
+    load_lr_scheduler,
+    load_optimizer,
+    load_classifier,
+    load_criterion,
+)
 
 
 def train(cfg: Config):
@@ -18,8 +26,7 @@ def train(cfg: Config):
 
     print(f"Directory: {os.getcwd()}")
 
-    only_detect = cfg.training.only_detect
-    num_classes = 2 if only_detect else cfg.training.num_classes
+    num_classes = 2 if cfg.training.only_detect or cfg.classifier is not None else cfg.training.num_classes
 
     dataset_train, dataset_val = load_data(cfg)
 
@@ -53,19 +60,31 @@ def train(cfg: Config):
     params = [p for p in model.parameters() if p.requires_grad]
     optimizer = load_optimizer(cfg, params)
     lr_scheduler = load_lr_scheduler(cfg, optimizer)
-    start_epoch = 0
 
+    start_epoch = 0
     num_epochs = cfg.training.epochs
 
     val_metric = MeanAveragePrecision()
 
-    train_losses = []
-    val_losses = []
     val_scores = []
 
+    if cfg.classifier is not None:
+        if cfg.checkpoint.resume:
+            classifier = torch.load(os.path.join(cfg.checkpoint.path, cfg.utils.model_dir, "classifier.pkl"))
+        else:
+            classifier = load_classifier(cfg)
+        params_cls = [p for p in classifier.parameters() if p.requires_grad]
+        optimizer_cls = load_optimizer(cfg, params_cls)
+        criterion = load_criterion(cfg)
+        val_metric_cls = MeanAveragePrecision()
+        val_scores_cls = []
+        accuracies = []
+
+    log_dir_json = os.path.join(os.getcwd(), cfg.utils.log_dir_json)
+    os.makedirs(log_dir_json, exist_ok=True)
     writers = [
-        SummaryWriter(log_dir=os.path.join(os.getcwd(), cfg.utils.log_dir)),
-        Json_writer(log_file=os.path.join(os.getcwd(), cfg.utils.log_dir, "run.json")),
+        Json_writer(log_file=os.path.join(log_dir_json, "run.json")),
+        # SummaryWriter(log_dir=os.path.join(os.getcwd(), cfg.utils.log_dir)),
     ]
 
     if cfg.checkpoint.resume:
@@ -74,22 +93,54 @@ def train(cfg: Config):
         optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         lr_scheduler.load_state_dict(checkpoint["lr_scheduler_state_dict"])
         start_epoch = checkpoint["epoch"] + 1
-        writers[1].load_data(os.path.join(cfg.checkpoint.path, cfg.utils.log_dir, "run.json"))
+        writers[0].load_data(os.path.join(cfg.checkpoint.path, cfg.utils.log_dir_json, "run.json"))
+
+        if cfg.classifier is not None:
+            checkpoint_cls = torch.load(os.path.join(cfg.checkpoint.path, cfg.utils.model_dir, "ckpt_cls.pth"))
+            classifier.load_state_dict(checkpoint_cls["classifier_state_dict"])
+            optimizer_cls.load_state_dict(checkpoint_cls["optimizer_cls_state_dict"])
 
     model = model.to(device)
+    if cfg.classifier is not None:
+        classifier = classifier.to(device)
 
     for epoch in range(start_epoch, num_epochs):
-        loss = train_one_epoch(
-            model, optimizer, data_loader_train, device=device, epoch=epoch, writers=writers
-        )
-        train_losses += [loss]
+        if cfg.classifier is None:
+            loss = train_one_epoch(model, optimizer, data_loader_train, device=device, epoch=epoch, writers=writers)
+        else:
+            loss, loss_cls = train_one_epoch(
+                model,
+                optimizer,
+                data_loader_train,
+                device=device,
+                epoch=epoch,
+                writers=writers,
+                classifier=classifier,
+                optimizer_cls=optimizer_cls,
+                criterion=criterion,
+            )
 
         lr_scheduler.step()
 
-        loss, scores = validate(
-            model, data_loader_val, device=device, metric=val_metric, epoch=epoch, writers=writers
-        )
-        val_losses += [loss]
+        if cfg.classifier is None:
+            loss, scores = validate(
+                model, data_loader_val, device=device, metric=val_metric, epoch=epoch, writers=writers,
+            )
+        else:
+            val_loss, scores, val_loss_cls, scores_cls, acc = validate(
+                model,
+                data_loader_val,
+                device=device,
+                metric=val_metric,
+                epoch=epoch,
+                writers=writers,
+                classifier=classifier,
+                criterion=criterion,
+                metric_cls=val_metric_cls,
+            )
+            val_scores_cls += [scores_cls]
+            accuracies += [acc]
+
         val_scores += [scores]
 
     for writer in writers:
@@ -110,9 +161,19 @@ def train(cfg: Config):
 
     print(val_scores[-1])
 
+    if cfg.classifier is not None:
+        torch.save(classifier, f"{model_dir}/classifier.pkl")
+        torch.save(
+            {"classifier_state_dict": classifier.state_dict(), "optimizer_cls_state_dict": optimizer_cls.state_dict(),},
+            f"{model_dir}/ckpt_cls.pth",
+        )
+
+        print(val_scores_cls[-1])
+        print(accuracies[-1])
+
     print(f"\nSaved at: {os.getcwd()}")
 
-    return train_losses, val_losses, val_scores
+    return
 
 
 @hydra.main(config_path="conf/", config_name="config.yaml")

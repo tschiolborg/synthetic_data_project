@@ -3,6 +3,8 @@ from typing import Dict
 
 from cv2 import threshold
 
+from src.classifier import Classifier
+
 
 @dataclass
 class OptimizerConfing:
@@ -14,6 +16,13 @@ class OptimizerConfing:
 class LrSchedulerConfig:
     name: str
     params: Dict
+
+
+class ClassifierConfig:
+    name: str
+    img_size: int
+    criterion: str
+    optimizer: OptimizerConfing
 
 
 @dataclass
@@ -51,6 +60,7 @@ class DatasetConfig:
 @dataclass
 class UtilsConfig:
     log_dir: str
+    log_dir_json: str
     model_dir: str
 
 
@@ -65,6 +75,7 @@ class Config:
     training: TrainingConfig
     optimizer: OptimizerConfing
     lr_scheduler: LrSchedulerConfig
+    classifier: ClassifierConfig
     dataset: DatasetConfig
     utils: UtilsConfig
     checkpoint: CheckpointConfig
