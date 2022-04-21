@@ -126,8 +126,6 @@ def validate(
 
                 # only continue if any detections
                 if len([v for t in new_detections for v in t["labels"]]) > 0:
-                    print(new_detections)
-                    print(new_targets)
 
                     losses_cls, acc, labels, scores = classify_dections(
                         images, new_detections, new_targets, classifier, criterion, device

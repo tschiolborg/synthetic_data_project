@@ -423,7 +423,7 @@ def compute_preds_for_classification(preds, targets):
                 new_pred["labels"] += [pred["labels"][j]]
                 new_pred["index"] += [j]
 
-                new_target["boxes"] += [box_t]
+                new_target["boxes"] += [target["boxes"][i]]
                 new_target["labels"] += [target["labels"][i]]
                 new_target["index"] += [i]
 
@@ -435,15 +435,16 @@ def compute_preds_for_classification(preds, targets):
 
 def crop_to_bbox(images, targets, img_size):
     cropped_images = []
-    for img, detection in zip(images, targets):
+    for img, target in zip(images, targets):
         img = img.cpu()
-        for box in detection["boxes"]:
+        for box in target["boxes"]:
+            # horizontal and vertical is switched
             new_img = TF.resized_crop(
                 img=img,
-                top=int(box[0]),
-                left=int(box[1]),
-                height=int(box[2] - box[0]),
-                width=int(box[3] - box[1]),
+                top=int(box[1]),
+                left=int(box[0]),
+                height=int(box[3] - box[1]),
+                width=int(box[2] - box[0]),
                 size=(img_size, img_size),
             )
             cropped_images += [new_img]
