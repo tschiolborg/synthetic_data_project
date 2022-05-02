@@ -2,11 +2,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class SimpleNet(nn.Module):
+class LeNet(nn.Module):
     def __init__(self, num_classes, img_size=28):
         self.num_classes = num_classes
         self.img_size = img_size
-        super(SimpleNet, self).__init__()
+        super(LeNet, self).__init__()
 
         self.conv1 = nn.Conv2d(3, 64, 5)
         self.pool1 = nn.MaxPool2d(2)
@@ -26,9 +26,9 @@ class SimpleNet(nn.Module):
         return x
 
 
-class Classifier(nn.Module):
+class MTSD_CNN(nn.Module):
     def __init__(self, num_classes, img_size=40):
-        super(Classifier, self).__init__()
+        super(MTSD_CNN, self).__init__()
         self.num_classes = num_classes
         self.img_size = img_size
         self.padding = "same"
@@ -77,4 +77,3 @@ class Classifier(nn.Module):
             nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, padding=self.padding),
             nn.BatchNorm2d(out_channels),
         )
-

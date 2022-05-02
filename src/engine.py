@@ -2,7 +2,6 @@ import warnings
 
 import numpy as np
 import torch
-import torchvision.transforms as T
 from tqdm import tqdm
 
 from .utils import compute_preds_for_classification, crop_to_bbox
@@ -11,7 +10,15 @@ warnings.filterwarnings("ignore")
 
 
 def train_one_epoch(
-    model, optimizer, data_loader, device, epoch, classifier=None, optimizer_cls=None, criterion=None, writers=None,
+    model,
+    optimizer,
+    data_loader,
+    device,
+    epoch,
+    classifier=None,
+    optimizer_cls=None,
+    criterion=None,
+    writers=None,
 ):
     total_loss_dec = []
 
@@ -82,7 +89,15 @@ def train_one_epoch(
 
 @torch.inference_mode()
 def validate(
-    model, data_loader, device, metric, epoch, classifier=None, criterion=None, metric_cls=None, writers=None,
+    model,
+    data_loader,
+    device,
+    metric,
+    epoch,
+    classifier=None,
+    criterion=None,
+    metric_cls=None,
+    writers=None,
 ):
     total_loss_dec = []
 

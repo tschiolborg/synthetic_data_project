@@ -1,5 +1,4 @@
 import json
-from msilib.schema import Class
 import os
 
 import dotenv
@@ -14,7 +13,7 @@ from PIL import ImageColor, ImageDraw, ImageFont
 from .config import Config, ConfigTest
 from .datasets import GTSDB_Dataset, MTSD_Dataset
 from .transforms import Transforms
-from .classifier import SimpleNet, Classifier
+from .models import LeNet, MTSD_CNN
 
 dotenv.load_dotenv(override=True)
 
@@ -94,7 +93,8 @@ def load_data_test(cfg: ConfigTest):
     cfg.dataset.name: either "MTSD" or "GTSDB"
     """
     my_transforms = Transforms(
-        min_area_val=cfg.dataset.test.transforms.min_area, img_size_val=cfg.dataset.test.transforms.img_size,
+        min_area_val=cfg.dataset.test.transforms.min_area,
+        img_size_val=cfg.dataset.test.transforms.img_size,
     )
 
     if cfg.dataset.name == "MTSD":
@@ -107,7 +107,10 @@ def load_data_test(cfg: ConfigTest):
         anno_test = os.path.join(MTSD, "anno_val")
 
         dataset_test = MTSD_Dataset(
-            img_dir, anno_test, transforms=my_transforms.get_transform(False), only_detect=cfg.testing.only_detect,
+            img_dir,
+            anno_test,
+            transforms=my_transforms.get_transform(False),
+            only_detect=cfg.testing.only_detect,
         )
 
     elif cfg.dataset.name == "GTSDB":
@@ -131,7 +134,7 @@ def load_data_test(cfg: ConfigTest):
 
 def load_optimizer(cfg: Config, params):
     """
-    Loads learning rate scheduler. 
+    Loads learning rate scheduler.
     Must be one of: SGD, Adam
     """
     if cfg.optimizer.name == "SGD":
@@ -149,12 +152,14 @@ def load_optimizer(cfg: Config, params):
 
 def load_lr_scheduler(cfg: Config, optimizer):
     """
-    Loads learning rate scheduler. 
+    Loads learning rate scheduler.
     Must be one of: StepLR
     """
     if cfg.lr_scheduler.name == "StepLR":
         return torch.optim.lr_scheduler.StepLR(
-            optimizer, step_size=cfg.lr_scheduler.params["step_size"], gamma=cfg.lr_scheduler.params["gamma"],
+            optimizer,
+            step_size=cfg.lr_scheduler.params["step_size"],
+            gamma=cfg.lr_scheduler.params["gamma"],
         )
     else:
         raise Exception(f"error cannot find optimizer: {cfg.optimizer.name}")
@@ -166,9 +171,9 @@ def load_classifier(cfg: Config):
     Must be one of: SimpleNet, Classifier
     """
     if cfg.classifier.name == "SimpleNet":
-        return SimpleNet(cfg.training.num_classes, 28)
+        return LeNet(cfg.training.num_classes, 28)
     elif cfg.classifier.name == "Classifier":
-        return Classifier(cfg.training.num_classes, 40)
+        return MTSD_CNN(cfg.training.num_classes, 40)
     else:
         raise Exception(f"error cannot find net: {cfg.classifier.name}")
 
@@ -186,7 +191,7 @@ def load_criterion(cfg: Config):
 
 class Json_writer:
     """
-    For logging training in json file 
+    For logging training in json file
     """
 
     def __init__(self, log_file):
@@ -274,7 +279,9 @@ def draw_bounding_box_on_image(image, ymin, xmin, ymax, xmax, color, font, thick
         ymax * im_height,
     )
     draw.line(
-        [(left, top), (left, bottom), (right, bottom), (right, top), (left, top)], width=thickness, fill=color,
+        [(left, top), (left, bottom), (right, bottom), (right, top), (left, top)],
+        width=thickness,
+        fill=color,
     )
 
     # If the total height of the display strings added to the top of the bounding
@@ -290,7 +297,8 @@ def draw_bounding_box_on_image(image, ymin, xmin, ymax, xmax, color, font, thick
     text_width, text_height = font.getsize(display_str)
     margin = np.ceil(0.05 * text_height)
     draw.rectangle(
-        [(left, text_bottom - text_height - 2 * margin), (left + text_width, text_bottom)], fill=color,
+        [(left, text_bottom - text_height - 2 * margin), (left + text_width, text_bottom)],
+        fill=color,
     )
     draw.text((left + margin, text_bottom - text_height - margin), display_str, fill="black", font=font)
 
@@ -337,7 +345,12 @@ def predict_and_display(img, model, classes):
     """
     pred, keep = predict(img, model)
     return draw_boxes(
-        img.cpu(), pred["boxes"].cpu(), pred["labels"].cpu(), pred["scores"].cpu(), keep.cpu(), classes=classes,
+        img.cpu(),
+        pred["boxes"].cpu(),
+        pred["labels"].cpu(),
+        pred["scores"].cpu(),
+        keep.cpu(),
+        classes=classes,
     )
 
 
@@ -451,4 +464,3 @@ def crop_to_bbox(images, targets, img_size):
 
     cropped_images = torch.stack(cropped_images)
     return cropped_images
-

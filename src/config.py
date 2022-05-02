@@ -1,10 +1,6 @@
 from dataclasses import dataclass
 from typing import Dict
 
-from cv2 import threshold
-
-from src.classifier import Classifier
-
 
 @dataclass
 class OptimizerConfing:
