@@ -17,6 +17,9 @@ Install requirements (in virtual environment):
 pip install -r requirements.txt
 ```
 
+## Detection example
+![alt_text](https://https://github.com/tschiolborg/synthetic_data_project/blob/master/reports/images/detection_example.png)
+
 
 
 ## Project Structure
