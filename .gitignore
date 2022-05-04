@@ -5,6 +5,7 @@ common_outputs/
 data/*
 !data/classes/
 !data/templates/
+!data/coco_test.jpg
 
 saved_models/
 
