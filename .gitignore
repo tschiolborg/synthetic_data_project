@@ -4,6 +4,7 @@ common_outputs/
 
 data/*
 !data/classes/
+!data/templates/
 
 saved_models/
 
