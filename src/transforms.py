@@ -20,7 +20,6 @@ class Transforms:
 
     def _transform_train(self, width=1000, height=1000):
         if self.img_size_train is not None:
-            #     width, height = self._set_dim(width, height, self.img_size_train)
             width = self.img_size_train
             height = self.img_size_train
 
@@ -53,25 +52,16 @@ class Transforms:
         random.seed(123)
 
         return A.Compose(
-            [A.LongestMaxSize(max_size=max_size, p=do_crop), ToTensorV2(p=1.0),],
+            [
+                A.LongestMaxSize(max_size=max_size, p=do_crop),
+                ToTensorV2(p=1.0),
+            ],
             bbox_params={
                 "format": "pascal_voc",
                 "label_fields": ["labels"],
                 "min_area": self.min_area_val,
             },
         )
-
-    def _set_dim(self, width, height, target_size):
-
-        if width > target_size or height > target_size:
-            if width >= height:
-                height = height * target_size // width
-                width = target_size
-            else:
-                width = width * target_size // height
-                height = target_size
-
-        return width, height
 
     def get_transform_gtsdb(self, train):
         if train:
