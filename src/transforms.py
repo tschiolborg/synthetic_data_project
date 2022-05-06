@@ -6,19 +6,37 @@ from torchvision import transforms as T
 
 
 class Transforms:
+    """Class for getting a Compose of transformations to apply to an image of MTSD."""
+
     def __init__(self, min_area_train=900, min_area_val=0, img_size_train=1000, img_size_val=None):
+        """
+        min_area_train: minimum area of bbox to include object for training
+        min_area_val: minimum area of bbox to include object for validation
+        img_size_train: resulting size of training images
+        """
         self.min_area_train = min_area_train
         self.min_area_val = min_area_val
         self.img_size_train = img_size_train
         self.img_size_val = img_size_val
 
     def get_transform(self, train):
+        """
+        Get transformations
+        train: True if training otherwise testing
+        """
+
         if train:
             return self._transform_train
         else:
             return self._transform_test
 
     def _transform_train(self, width=1000, height=1000):
+        """
+        Transformations for train data
+        width: resulting width (if img_size_train is not set)
+        height: resulting height (if img_size_train is not set)
+        """
+
         if self.img_size_train is not None:
             width = self.img_size_train
             height = self.img_size_train
@@ -49,7 +67,7 @@ class Transforms:
             max_size = 1000
             do_crop = 0
 
-        random.seed(123)
+        random.seed(123)  # to always get same size
 
         return A.Compose(
             [
@@ -64,6 +82,11 @@ class Transforms:
         )
 
     def get_transform_gtsdb(self, train):
+        """
+        Transformations done to images from GTSDB
+        train: True if training otherwise testing
+        """
+
         if train:
             return T.Compose(
                 [
