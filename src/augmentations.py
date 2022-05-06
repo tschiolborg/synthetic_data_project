@@ -126,10 +126,10 @@ def uniform_noise(tmp, noise=None):
     """
     Applies uniform noise on image
     tmp: image (template)
-    noise: constant used to apply noise 
+    noise: constant used to apply noise
     Return: (tmp, noise)
     """
-    
+
     if noise is None:
         noise = np.random.randint(-15, 15, size=tmp.shape)
 
@@ -139,6 +139,13 @@ def uniform_noise(tmp, noise=None):
 
 
 def remove_padding(tmp, mask):
+    """
+    removes padding of image and mask
+    tmp: image (template)
+    mask: mask if template
+    Return: (tmp, mask)
+    """
+
     foregorund = np.argwhere(mask[:, :, 0] > 0)
     y0, x0 = foregorund.min(axis=0)
     y1, x1 = foregorund.max(axis=0) + 1
@@ -150,7 +157,15 @@ def remove_padding(tmp, mask):
 
 
 def blend(tmp, mask, img, y0, x0):
-    # alpha blending
+    """
+    pastes template into image by alpha blending
+    tmp: template (H, W, 3)
+    mask: mask of template (H, W, 3)
+    img: background image to paste on
+    y0: y position (ymin) on img to paste tmp
+    x0: x position (xmin) on img to paste tmp
+    Return: (blended image)
+    """
 
     y1 = y0 + tmp.shape[0]
     x1 = x0 + tmp.shape[1]
