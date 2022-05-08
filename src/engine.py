@@ -10,15 +10,7 @@ warnings.filterwarnings("ignore")
 
 
 def train_one_epoch(
-    model,
-    optimizer,
-    data_loader,
-    device,
-    epoch,
-    classifier=None,
-    optimizer_cls=None,
-    criterion=None,
-    writers=None,
+    model, optimizer, data_loader, device, epoch, classifier=None, optimizer_cls=None, criterion=None, writers=None,
 ):
     total_loss_dec = []
 
@@ -89,15 +81,7 @@ def train_one_epoch(
 
 @torch.inference_mode()
 def validate(
-    model,
-    data_loader,
-    device,
-    metric,
-    epoch,
-    classifier=None,
-    criterion=None,
-    metric_cls=None,
-    writers=None,
+    model, data_loader, device, metric, epoch, classifier=None, criterion=None, metric_cls=None, writers=None,
 ):
     total_loss_dec = []
 
@@ -248,6 +232,68 @@ def evaluate(model, data_loader, device, metric):
     return scores
 
 
+def train_one_epoch_cls(
+    classifier, optimizer_cls, criterion, data_loader, device, epoch, writers=None,
+):
+    classifier.train()
+    total_loss_cls = []
+    accuracy = []
+
+    for images, targets in tqdm(data_loader, desc=f"Epoch [{epoch+1}]", position=0, leave=True):
+        targets_cls = targets
+
+        images = list(image.to(device) for image in images)
+
+        targets_cls = [{k: v.to(device) for k, v in t.items()} for t in targets_cls]
+
+        optimizer_cls.zero_grad()
+        losses_cls, acc, labels, scores = classify_dections(
+            images, targets_cls, targets_cls, classifier, criterion, device
+        )
+        losses_cls.backward()
+        optimizer_cls.step()
+        total_loss_cls += [losses_cls.item()]
+        accuracy += [acc]
+
+    if writers is not None:
+        for writer in writers:
+            writer.add_scalar("Loss/train/cls", np.mean(total_loss_cls), epoch)
+            writer.add_scalar("Acc/train/cls", np.mean(accuracy), epoch)
+
+    return np.mean(total_loss_cls), np.mean(accuracy)
+
+
+@torch.inference_mode()
+def validate_cls(
+    classifier, criterion, data_loader, device, epoch, writers=None,
+):
+    classifier.eval()
+    total_loss_cls = []
+    accuracy = []
+
+    for images, targets in tqdm(data_loader, desc="Evaluating", position=0, leave=True):
+        targets_cls = targets
+
+        targets_cls = [{k: v.to(device) for k, v in t.items()} for t in targets_cls]
+
+        with torch.no_grad():
+            losses_cls, acc, labels, scores = classify_dections(
+                images, targets_cls, targets_cls, classifier, criterion, device
+            )
+
+        total_loss_cls += [losses_cls.item()]
+        accuracy += [acc]
+
+    # write
+    if writers is not None:
+        for writer in writers:
+            writer.add_scalar("Loss/val/cls", np.mean(total_loss_cls), epoch)
+            writer.add_scalar("Acc/val/cls", np.mean(accuracy), epoch)
+
+    # return
+    return (np.mean(total_loss_cls), np.mean(accuracy))
+
+
 def compute_detection_labels(targets):
     targets_dec = []
     for target in targets:
@@ -258,7 +304,7 @@ def compute_detection_labels(targets):
 
 
 def classify_dections(images, detections, targets, classifier, criterion, device):
-    cropped_images = crop_to_bbox(images, detections, classifier.img_size)
+    cropped_images = crop_to_bbox(images, detections, 224)
     cropped_images = cropped_images.to(device)
 
     target_labels = torch.as_tensor([torch.as_tensor(v) for t in targets for v in t["labels"]]).to(device)

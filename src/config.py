@@ -27,6 +27,7 @@ class TrainingConfig:
     only_detect: bool
     num_classes: int
     epochs: int
+    criterion: str
 
 
 @dataclass
@@ -37,6 +38,7 @@ class TransformsConfig:
 
 @dataclass
 class SubDatasetConfig:
+    do_transforms: bool
     batch_size: int
     transforms: TransformsConfig
 

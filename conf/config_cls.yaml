@@ -1,0 +1,43 @@
+
+training:
+  num_classes: 53
+  epochs: 10
+  only_detect: false
+  criterion: CrossEntropyLoss
+
+optimizer:
+  name: Adam
+  params:
+    lr: 0.001
+    eps: 0.1
+
+dataset:
+  name: MTSD
+  mtsd_labels: 
+  num_workers: 4
+  threshold: 900
+  keep_other: False
+  train:
+    do_transforms: false
+    batch_size: 8
+    transforms:
+      min_area: 0
+      img_size: 1000
+  val:
+    do_transforms: false
+    batch_size: 8
+    transforms:
+      min_area: 0
+      img_size: 
+  test:
+
+utils:
+  log_dir: logs
+  log_dir_json: logs_json
+  model_dir: saved_models
+
+checkpoint:
+  resume: true
+  path: C:\Users\saibo\Documents\bachelor_project\outputs\2022-05-08\21-31-20
+
+

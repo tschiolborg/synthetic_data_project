@@ -45,7 +45,7 @@ def load_data(cfg: Config):
         dataset_train = MTSD_Dataset(
             img_dir,
             anno_train,
-            transforms=my_transforms.get_transform(True),
+            transforms=my_transforms.get_transform(cfg.dataset.train.do_transforms),
             only_detect=cfg.training.only_detect,
             threshold=cfg.dataset.threshold,
             keep_other=cfg.dataset.keep_other,
@@ -93,8 +93,7 @@ def load_data_test(cfg: ConfigTest):
     cfg.dataset.name: either "MTSD" or "GTSDB"
     """
     my_transforms = Transforms(
-        min_area_val=cfg.dataset.test.transforms.min_area,
-        img_size_val=cfg.dataset.test.transforms.img_size,
+        min_area_val=cfg.dataset.test.transforms.min_area, img_size_val=cfg.dataset.test.transforms.img_size,
     )
 
     if cfg.dataset.name == "MTSD":
@@ -107,10 +106,7 @@ def load_data_test(cfg: ConfigTest):
         anno_test = os.path.join(MTSD, "anno_val")
 
         dataset_test = MTSD_Dataset(
-            img_dir,
-            anno_test,
-            transforms=my_transforms.get_transform(False),
-            only_detect=cfg.testing.only_detect,
+            img_dir, anno_test, transforms=my_transforms.get_transform(False), only_detect=cfg.testing.only_detect,
         )
 
     elif cfg.dataset.name == "GTSDB":
@@ -157,9 +153,7 @@ def load_lr_scheduler(cfg: Config, optimizer):
     """
     if cfg.lr_scheduler.name == "StepLR":
         return torch.optim.lr_scheduler.StepLR(
-            optimizer,
-            step_size=cfg.lr_scheduler.params["step_size"],
-            gamma=cfg.lr_scheduler.params["gamma"],
+            optimizer, step_size=cfg.lr_scheduler.params["step_size"], gamma=cfg.lr_scheduler.params["gamma"],
         )
     else:
         raise Exception(f"error cannot find optimizer: {cfg.optimizer.name}")
@@ -183,7 +177,7 @@ def load_criterion(cfg: Config):
     Loads criterion
     Must be one of: CrossEntropyLoss
     """
-    if cfg.classifier.criterion == "CrossEntropyLoss":
+    if cfg.training.criterion == "CrossEntropyLoss":
         return torch.nn.CrossEntropyLoss()
     else:
         raise Exception(f"error cannot find net: {cfg.classifier.name}")
@@ -279,9 +273,7 @@ def draw_bounding_box_on_image(image, ymin, xmin, ymax, xmax, color, font, thick
         ymax * im_height,
     )
     draw.line(
-        [(left, top), (left, bottom), (right, bottom), (right, top), (left, top)],
-        width=thickness,
-        fill=color,
+        [(left, top), (left, bottom), (right, bottom), (right, top), (left, top)], width=thickness, fill=color,
     )
 
     # If the total height of the display strings added to the top of the bounding
@@ -297,8 +289,7 @@ def draw_bounding_box_on_image(image, ymin, xmin, ymax, xmax, color, font, thick
     text_width, text_height = font.getsize(display_str)
     margin = np.ceil(0.05 * text_height)
     draw.rectangle(
-        [(left, text_bottom - text_height - 2 * margin), (left + text_width, text_bottom)],
-        fill=color,
+        [(left, text_bottom - text_height - 2 * margin), (left + text_width, text_bottom)], fill=color,
     )
     draw.text((left + margin, text_bottom - text_height - margin), display_str, fill="black", font=font)
 
@@ -345,12 +336,7 @@ def predict_and_display(img, model, classes):
     """
     pred, keep = predict(img, model)
     return draw_boxes(
-        img.cpu(),
-        pred["boxes"].cpu(),
-        pred["labels"].cpu(),
-        pred["scores"].cpu(),
-        keep.cpu(),
-        classes=classes,
+        img.cpu(), pred["boxes"].cpu(), pred["labels"].cpu(), pred["scores"].cpu(), keep.cpu(), classes=classes,
     )
 
 
