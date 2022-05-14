@@ -12,7 +12,14 @@ from torchvision.transforms import ToTensor
 
 class MTSD_Dataset(torch.utils.data.Dataset):
     def __init__(
-        self, image_dir, anno_dir, extension="jpg", transforms=None, only_detect=False, threshold=900, keep_other=False,
+        self,
+        image_dir,
+        anno_dir,
+        extension="jpg",
+        transforms=None,
+        only_detect=False,
+        threshold=900,
+        keep_other=False,
     ):
         self.image_dir = image_dir
         self.anno_dir = anno_dir
@@ -35,7 +42,9 @@ class MTSD_Dataset(torch.utils.data.Dataset):
 
         target = {"labels": [], "labels_str": [], "boxes": [], "areas": []}
 
-        for label, label_str, box, area in zip(anno["labels"], anno["labels_str"], anno["boxes"], anno["areas"]):
+        for label, label_str, box, area in zip(
+            anno["labels"], anno["labels_str"], anno["boxes"], anno["areas"]
+        ):
             if area >= self.threshold and (label_str != "other-sign" or self.keep_other):
                 target["labels"].append(label)
                 target["labels_str"].append(label_str)
@@ -64,7 +73,9 @@ class MTSD_Dataset(torch.utils.data.Dataset):
 
             max_tries = 100
             while len(sample["bboxes"]) == 0:
-                sample = local_transforms(image=img, bboxes=target["boxes"], labels=target["labels"])
+                sample = local_transforms(
+                    image=img, bboxes=target["boxes"], labels=target["labels"]
+                )
 
                 max_tries -= 1
                 if max_tries <= 0:
@@ -98,7 +109,9 @@ class GTSDB_Dataset(torch.utils.data.Dataset):
         self.mtsd_labels = mtsd_labels
         self.imgs = list(sorted(os.listdir(image_dir)))
 
-        anno_file = np.genfromtxt(os.path.join(anno_dir, "gt.txt"), delimiter=";", dtype=None, encoding=None)
+        anno_file = np.genfromtxt(
+            os.path.join(anno_dir, "gt.txt"), delimiter=";", dtype=None, encoding=None
+        )
 
         if self.mtsd_labels is not None:
             with open(self.mtsd_labels) as f:

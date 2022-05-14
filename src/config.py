@@ -84,3 +84,5 @@ class ConfigTest:
     testing: TrainingConfig
     dataset: DatasetConfig
     model_dir: str
+    classifier_dir: str
+    save_dir: str

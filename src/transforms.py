@@ -57,29 +57,41 @@ class Transforms:
         )
 
     def _transform_test(self, width=1000, height=1000):
-        do_crop = 1
-
-        if width > 4000 or height > 4000:
-            max_size = 4000
-        elif width > 2048 or height > 2048:
-            max_size = 2048
-        else:
-            max_size = 1000
-            do_crop = 0
-
         random.seed(123)  # to always get same size
 
-        return A.Compose(
-            [
-                A.LongestMaxSize(max_size=max_size, p=do_crop),
-                ToTensorV2(p=1.0),
-            ],
-            bbox_params={
-                "format": "pascal_voc",
-                "label_fields": ["labels"],
-                "min_area": self.min_area_val,
-            },
-        )
+        if self.img_size_val is not None:
+            width = self.img_size_val
+            height = self.img_size_val
+
+            return A.Compose(
+                [A.RandomSizedBBoxSafeCrop(width=width, height=height, p=1.0), ToTensorV2(p=1.0)],
+                bbox_params={
+                    "format": "pascal_voc",
+                    "label_fields": ["labels"],
+                    "min_area": self.min_area_val,
+                    "min_visibility": 0.7,
+                },
+            )
+
+        else:
+            do_resize = 1
+
+            if width > 4000 or height > 4000:
+                max_size = 4000
+            elif width > 2048 or height > 2048:
+                max_size = 2048
+            else:
+                max_size = 1000
+                do_resize = 0
+
+            return A.Compose(
+                [A.LongestMaxSize(max_size=max_size, p=do_resize), ToTensorV2(p=1.0)],
+                bbox_params={
+                    "format": "pascal_voc",
+                    "label_fields": ["labels"],
+                    "min_area": self.min_area_val,
+                },
+            )
 
     def get_transform_gtsdb(self, train):
         """

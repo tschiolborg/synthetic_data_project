@@ -1,5 +1,6 @@
 ### Define your own
-outputs/
+outputs/*
+!outputs/_saved/
 common_outputs/
 
 data/*

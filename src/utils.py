@@ -13,7 +13,6 @@ from PIL import ImageColor, ImageDraw, ImageFont
 from .config import Config, ConfigTest
 from .datasets import GTSDB_Dataset, MTSD_Dataset
 from .transforms import Transforms
-from .models import LeNet, MTSD_CNN
 
 dotenv.load_dotenv(override=True)
 
@@ -92,8 +91,10 @@ def load_data_test(cfg: ConfigTest):
     cfg: config file, see config.py
     cfg.dataset.name: either "MTSD" or "GTSDB"
     """
+
     my_transforms = Transforms(
-        min_area_val=cfg.dataset.test.transforms.min_area, img_size_val=cfg.dataset.test.transforms.img_size,
+        min_area_val=cfg.dataset.test.transforms.min_area,
+        img_size_val=cfg.dataset.test.transforms.img_size,
     )
 
     if cfg.dataset.name == "MTSD":
@@ -106,7 +107,10 @@ def load_data_test(cfg: ConfigTest):
         anno_test = os.path.join(MTSD, "anno_val")
 
         dataset_test = MTSD_Dataset(
-            img_dir, anno_test, transforms=my_transforms.get_transform(False), only_detect=cfg.testing.only_detect,
+            img_dir,
+            anno_test,
+            transforms=my_transforms.get_transform(False),
+            only_detect=cfg.testing.only_detect,
         )
 
     elif cfg.dataset.name == "GTSDB":
@@ -141,7 +145,9 @@ def load_optimizer(cfg: Config, params):
             weight_decay=cfg.optimizer.params["weight_decay"],
         )
     elif cfg.optimizer.name == "Adam":
-        return torch.optim.Adam(params, lr=cfg.optimizer.params["lr"], eps=cfg.optimizer.params["eps"])
+        return torch.optim.Adam(
+            params, lr=cfg.optimizer.params["lr"], eps=cfg.optimizer.params["eps"]
+        )
     else:
         raise Exception(f"error cannot find optimizer: {cfg.optimizer.name}")
 
@@ -153,34 +159,12 @@ def load_lr_scheduler(cfg: Config, optimizer):
     """
     if cfg.lr_scheduler.name == "StepLR":
         return torch.optim.lr_scheduler.StepLR(
-            optimizer, step_size=cfg.lr_scheduler.params["step_size"], gamma=cfg.lr_scheduler.params["gamma"],
+            optimizer,
+            step_size=cfg.lr_scheduler.params["step_size"],
+            gamma=cfg.lr_scheduler.params["gamma"],
         )
     else:
         raise Exception(f"error cannot find optimizer: {cfg.optimizer.name}")
-
-
-def load_classifier(cfg: Config):
-    """
-    Loads classifier
-    Must be one of: SimpleNet, Classifier
-    """
-    if cfg.classifier.name == "SimpleNet":
-        return LeNet(cfg.training.num_classes, 28)
-    elif cfg.classifier.name == "Classifier":
-        return MTSD_CNN(cfg.training.num_classes, 40)
-    else:
-        raise Exception(f"error cannot find net: {cfg.classifier.name}")
-
-
-def load_criterion(cfg: Config):
-    """
-    Loads criterion
-    Must be one of: CrossEntropyLoss
-    """
-    if cfg.training.criterion == "CrossEntropyLoss":
-        return torch.nn.CrossEntropyLoss()
-    else:
-        raise Exception(f"error cannot find net: {cfg.classifier.name}")
 
 
 class Json_writer:
@@ -192,7 +176,7 @@ class Json_writer:
         self.data = {}
         self.log_file = log_file
 
-    def add_scalar(self, tag, value, epoch):
+    def add_scalar(self, tag, value, epoch=None):
         if torch.is_tensor(value):
             value = value.item()
         if tag in self.data:
@@ -200,7 +184,7 @@ class Json_writer:
         else:
             self.data[tag] = [value]
 
-    def add_scalars(self, tag, value_dict, epoch):
+    def add_scalars(self, tag, value_dict, epoch=None):
         if tag in self.data:
             for key, value in value_dict.items():
                 if torch.is_tensor(value):
@@ -260,7 +244,9 @@ def plot_val(scores, labels, y_label="mAP", file_out="output"):
     plt.show()
 
 
-def draw_bounding_box_on_image(image, ymin, xmin, ymax, xmax, color, font, thickness=4, display_str=""):
+def draw_bounding_box_on_image(
+    image, ymin, xmin, ymax, xmax, color, font, thickness=4, display_str=""
+):
     """
     draws a single box and displays label on PIL image
     """
@@ -273,7 +259,9 @@ def draw_bounding_box_on_image(image, ymin, xmin, ymax, xmax, color, font, thick
         ymax * im_height,
     )
     draw.line(
-        [(left, top), (left, bottom), (right, bottom), (right, top), (left, top)], width=thickness, fill=color,
+        [(left, top), (left, bottom), (right, bottom), (right, top), (left, top)],
+        width=thickness,
+        fill=color,
     )
 
     # If the total height of the display strings added to the top of the bounding
@@ -289,9 +277,12 @@ def draw_bounding_box_on_image(image, ymin, xmin, ymax, xmax, color, font, thick
     text_width, text_height = font.getsize(display_str)
     margin = np.ceil(0.05 * text_height)
     draw.rectangle(
-        [(left, text_bottom - text_height - 2 * margin), (left + text_width, text_bottom)], fill=color,
+        [(left, text_bottom - text_height - 2 * margin), (left + text_width, text_bottom)],
+        fill=color,
     )
-    draw.text((left + margin, text_bottom - text_height - margin), display_str, fill="black", font=font)
+    draw.text(
+        (left + margin, text_bottom - text_height - margin), display_str, fill="black", font=font
+    )
 
 
 def draw_boxes(image, boxes, labels, scores, keep, max_boxes=10, min_score=0.01, classes=None):
@@ -316,7 +307,9 @@ def draw_boxes(image, boxes, labels, scores, keep, max_boxes=10, min_score=0.01,
             label = classes[labels[i].item()] if classes is not None else labels[i].item()
             display_str = f"{label}: {int(100 * scores[i])}%"
             color = colors[hash(labels[i]) % len(colors)]
-            draw_bounding_box_on_image(image_pil, ymin, xmin, ymax, xmax, color, font, display_str=display_str)
+            draw_bounding_box_on_image(
+                image_pil, ymin, xmin, ymax, xmax, color, font, display_str=display_str
+            )
     return image_pil
 
 
@@ -336,7 +329,12 @@ def predict_and_display(img, model, classes):
     """
     pred, keep = predict(img, model)
     return draw_boxes(
-        img.cpu(), pred["boxes"].cpu(), pred["labels"].cpu(), pred["scores"].cpu(), keep.cpu(), classes=classes,
+        img.cpu(),
+        pred["boxes"].cpu(),
+        pred["labels"].cpu(),
+        pred["scores"].cpu(),
+        keep.cpu(),
+        classes=classes,
     )
 
 
@@ -392,13 +390,14 @@ def compute_preds_for_classification(preds, targets):
     preds: list of predictions
     targets: list of targets
     """
+
     new_preds = []
     new_targets = []
 
-    targets = [{k: v.cpu() for k, v in t.items()} for t in targets]
-    preds = [{k: v.cpu() for k, v in t.items()} for t in preds]
+    targets_cpu = [{k: v.cpu() for k, v in t.items()} for t in targets]
+    preds_cpu = [{k: v.cpu() for k, v in t.items()} for t in preds]
 
-    for pred, target in zip(preds, targets):
+    for pred, target in zip(preds_cpu, targets_cpu):
         new_pred = {"boxes": [], "labels": [], "index": []}
         new_target = {"boxes": [], "labels": [], "index": []}
 
@@ -433,18 +432,32 @@ def compute_preds_for_classification(preds, targets):
 
 
 def crop_to_bbox(images, targets, img_size):
+    """Stack crops of images based on bboxes"""
+
     cropped_images = []
     for img, target in zip(images, targets):
         img = img.cpu()
         for box in target["boxes"]:
-            # horizontal and vertical is switched
+            top = int(box[1])
+            left = int(box[0])
+            height = int(box[3] - box[1])
+            width = int(box[2] - box[0])
+
+            # fix if height is 0
+            if height <= 0:
+                height += 1
+                if img.shape[0] <= top + height:
+                    top -= 1
+
+            # fix if width is 0
+            if width <= 0:
+                width += 1
+                if img.shape[1] <= left + width:
+                    left -= 1
+
+            # horizontal and vertical axes are switched
             new_img = TF.resized_crop(
-                img=img,
-                top=int(box[1]),
-                left=int(box[0]),
-                height=int(box[3] - box[1]),
-                width=int(box[2] - box[0]),
-                size=(img_size, img_size),
+                img=img, top=top, left=left, height=height, width=width, size=(img_size, img_size),
             )
             cropped_images += [new_img]
 

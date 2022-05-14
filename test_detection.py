@@ -2,21 +2,23 @@ import os
 
 import hydra
 import torch
+from torchmetrics.detection.map import MeanAveragePrecision
 
 from src.config import ConfigTest
-from src.engine import validate_cls
+from src.engine import evaluate_detection
 from src.utils import collate_fn, load_data_test
 
 
-def test_cls():
+def test_detection():
+    """Test detection model on test data"""
+
     with hydra.initialize(config_path="conf"):
-        cfg: ConfigTest = hydra.compose(config_name="config_test_cls.yaml")
+        cfg: ConfigTest = hydra.compose(config_name="config_test.yaml")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using {device}")
 
-    print(f"Directory: {os.getcwd()}")
-
+    # load data
     dataset_test = load_data_test(cfg)
 
     data_loader_test = torch.utils.data.DataLoader(
@@ -27,19 +29,22 @@ def test_cls():
         collate_fn=collate_fn,
     )
 
+    # load model
     model = torch.load(cfg.model_dir)
+
+    metric = MeanAveragePrecision()
 
     model = model.to(device)
 
-    criterion = torch.nn.CrossEntropyLoss().cuda()
+    # evaluate model
+    score = evaluate_detection(
+        model=model, data_loader=data_loader_test, device=device, metric=metric
+    )
 
-    loss, acc = validate_cls(model, criterion, data_loader_test, device=device)
+    print(score)
 
-    print(f"Loss: {loss}")
-    print(f"Accuray: {acc}")
-
-    return acc
+    return score
 
 
 if __name__ == "__main__":
-    test_cls()
+    test_detection()
