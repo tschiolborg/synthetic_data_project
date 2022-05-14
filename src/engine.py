@@ -3,7 +3,6 @@ from typing import List, Optional, Dict
 
 import numpy as np
 import torch
-import torchvision
 from tqdm import tqdm
 
 from .utils import crop_to_bbox
