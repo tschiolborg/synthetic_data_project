@@ -2,8 +2,8 @@
 training:
   use_coco: True
   only_detect: True
-  num_classes: 43
-  epochs: 1
+  num_classes: 54
+  epochs: 25
 
 optimizer:
   name: SGD
@@ -19,17 +19,19 @@ lr_scheduler:
     gamma: 0.1
 
 dataset:
-  name: GTSDB
+  name: MTSD
   mtsd_labels: 
   num_workers: 4
   threshold: 900
   keep_other: False
   train:
+    do_transforms: true
     batch_size: 4
     transforms:
       min_area: 0
       img_size: 1000
   val:
+    do_transforms: false
     batch_size: 2
     transforms:
       min_area: 0
@@ -42,7 +44,7 @@ utils:
   model_dir: saved_models
 
 checkpoint:
-  resume: False
-  path: 
+  resume: True
+  path: C:\Users\saibo\Documents\bachelor_project\outputs\2022-05-16\20-20-47
 
 

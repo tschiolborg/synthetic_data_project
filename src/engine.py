@@ -18,11 +18,9 @@ __all__ = [
     "validate_cls",
 ]
 
-import matplotlib.pyplot as plt
-
 
 def train_one_epoch_detection(
-    model, optimizer, data_loader, device, epoch: int, writers: Optional[List] = None
+    model, optimizer, data_loader, device, metric, epoch: int, writers: Optional[List] = None
 ):
     """Train detection model for one epoch"""
 
@@ -62,12 +60,23 @@ def train_one_epoch_detection(
         if lr_scheduler is not None:
             lr_scheduler.step()
 
+        # detections to compute score
+        model.eval()
+        with torch.no_grad():
+            detections = model(images)
+            metric.update(detections, targets)
+
+    # metric
+    scores = metric.compute()
+    metric.reset()
+
     # log
     if writers is not None:
         for writer in writers:
             writer.add_scalar("Loss/train/dec", np.mean(total_loss), epoch)
+            writer.add_scalars("Score/train/dec", scores, epoch)
 
-    return np.mean(total_loss)
+    return np.mean(total_loss), scores
 
 
 @torch.inference_mode()

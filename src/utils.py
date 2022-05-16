@@ -1,5 +1,6 @@
 import json
 import os
+from typing import List, Optional
 
 import dotenv
 import matplotlib.pyplot as plt
@@ -176,7 +177,7 @@ class Json_writer:
         self.data = {}
         self.log_file = log_file
 
-    def add_scalar(self, tag, value, epoch=None):
+    def add_scalar(self, tag: str, value, epoch=None):
         if torch.is_tensor(value):
             value = value.item()
         if tag in self.data:
@@ -184,7 +185,7 @@ class Json_writer:
         else:
             self.data[tag] = [value]
 
-    def add_scalars(self, tag, value_dict, epoch=None):
+    def add_scalars(self, tag: str, value_dict, epoch=None):
         if tag in self.data:
             for key, value in value_dict.items():
                 if torch.is_tensor(value):
@@ -201,7 +202,7 @@ class Json_writer:
         with open(self.log_file, "w+") as f:
             json.dump(self.data, f, indent=6)
 
-    def load_data(self, log_file):
+    def load_data(self, log_file: str):
         with open(log_file) as f:
             self.data = json.load(f)
         return self
@@ -211,24 +212,35 @@ def collate_fn(batch):
     return tuple(zip(*batch))
 
 
-def plot_loss(train_losses, val_losses=None, file_out="output"):
+def plot_loss(
+    train_losses: List[float],
+    val_losses: Optional[List[float]] = None,
+    title: str = "Loss",
+    file_out: str = "output",
+):
     """
     matplotlib figure of losses
     """
     epochs = range(len(train_losses))
     fig = plt.figure(figsize=(10, 8))
-    plt.plot(epochs, train_losses, label="train loss")
+    plt.plot(epochs, train_losses, label="Train")
     if val_losses is not None:
-        plt.plot(epochs, val_losses, label="val loss")
+        plt.plot(epochs, val_losses, label="Validation")
     plt.xlabel("Epochs", fontdict={"size": 12})
     plt.ylabel("Loss", fontdict={"size": 12})
-    plt.title("Loss", fontdict={"size": 16})
+    plt.title(title, fontdict={"size": 16})
     plt.legend(prop={"size": 12})
     plt.savefig(file_out)
     plt.show()
 
 
-def plot_val(scores, labels, y_label="mAP", file_out="output"):
+def plot_curves(
+    scores: List[List[float]],
+    labels: List[str],
+    y_label: str = "mAP",
+    title: str = "Score",
+    file_out: str = "output",
+):
     """
     matplotlib figure of validation scores
     """
@@ -238,7 +250,7 @@ def plot_val(scores, labels, y_label="mAP", file_out="output"):
         plt.plot(epochs, score, label=label)
     plt.xlabel("Epochs", fontdict={"size": 12})
     plt.ylabel(y_label, fontdict={"size": 12})
-    plt.title("Averge Precision", fontdict={"size": 16})
+    plt.title(title, fontdict={"size": 16})
     plt.legend(prop={"size": 12})
     plt.savefig(file_out)
     plt.show()

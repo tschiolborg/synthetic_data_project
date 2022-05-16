@@ -68,6 +68,7 @@ def train_detection(cfg: Config):
     num_epochs = cfg.training.epochs
 
     # metric
+    train_metric = MeanAveragePrecision()
     val_metric = MeanAveragePrecision()
     val_scores = []
 
@@ -95,8 +96,14 @@ def train_detection(cfg: Config):
     for epoch in range(start_epoch, num_epochs):
 
         # train model
-        loss = train_one_epoch_detection(
-            model, optimizer, data_loader_train, device=device, epoch=epoch, writers=writers
+        loss, train_scores = train_one_epoch_detection(
+            model,
+            optimizer,
+            data_loader_train,
+            device=device,
+            metric=train_metric,
+            epoch=epoch,
+            writers=writers,
         )
 
         lr_scheduler.step()
