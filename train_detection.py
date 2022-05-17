@@ -8,13 +8,7 @@ from torchvision.models.detection.faster_rcnn import FastRCNNPredictor, fasterrc
 
 from src.config import Config
 from src.engine import train_one_epoch_detection, validate_detection
-from src.utils import (
-    Json_writer,
-    collate_fn,
-    load_data,
-    load_lr_scheduler,
-    load_optimizer,
-)
+from src.utils import Json_writer, collate_fn, load_data, load_lr_scheduler, load_optimizer
 
 
 def train_detection(cfg: Config):

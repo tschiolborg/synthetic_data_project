@@ -6,7 +6,7 @@ from torchmetrics.detection.map import MeanAveragePrecision
 
 from src.config import ConfigTest
 from src.engine import evalute_both_stages
-from src.utils import load_data_test, collate_fn, Json_writer
+from src.utils import Json_writer, collate_fn, load_data_test
 
 
 def test_full_model():

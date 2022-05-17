@@ -1,5 +1,5 @@
 import warnings
-from typing import List, Optional, Dict
+from typing import Dict, List, Optional
 
 import numpy as np
 import torch

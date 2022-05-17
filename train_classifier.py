@@ -7,12 +7,7 @@ from torchvision.models import resnet50
 
 from src.config import Config
 from src.engine import train_one_epoch_cls, validate_cls
-from src.utils import (
-    Json_writer,
-    collate_fn,
-    load_data,
-    load_optimizer,
-)
+from src.utils import Json_writer, collate_fn, load_data, load_optimizer
 
 
 def train_cls(cfg: Config):
