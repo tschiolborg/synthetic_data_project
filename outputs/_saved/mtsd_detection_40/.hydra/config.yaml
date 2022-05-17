@@ -1,29 +1,25 @@
-
 training:
-  use_coco: True
-  only_detect: True
+  use_coco: true
+  only_detect: true
   num_classes: 54
-  epochs: 2
-
+  epochs: 40
 optimizer:
   name: SGD
   params:
     lr: 0.001
     momentum: 0.9
     weight_decay: 0.0005
-
 lr_scheduler:
   name: StepLR
   params:
     step_size: 30
     gamma: 0.1
-
 dataset:
   name: MTSD
-  mtsd_labels: 
+  mtsd_labels: null
   num_workers: 4
   threshold: 900
-  keep_other: False
+  keep_other: false
   train:
     do_transforms: true
     batch_size: 4
@@ -35,16 +31,12 @@ dataset:
     batch_size: 2
     transforms:
       min_area: 0
-      img_size: 1000
-  test:
-
+      img_size: null
+  test: null
 utils:
   log_dir: logs
   log_dir_json: logs_json
   model_dir: saved_models
-
 checkpoint:
-  resume: False
-  path:
-
-
+  resume: true
+  path: C:\Users\saibo\Documents\bachelor_project\outputs\2022-05-17\15-21-12

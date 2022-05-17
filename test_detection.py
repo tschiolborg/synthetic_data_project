@@ -37,13 +37,14 @@ def test_detection():
     model = model.to(device)
 
     # evaluate model
-    score = evaluate_detection(
+    loss, score = evaluate_detection(
         model=model, data_loader=data_loader_test, device=device, metric=metric
     )
 
     print(score)
+    print(loss)
 
-    return score
+    return loss, score
 
 
 if __name__ == "__main__":

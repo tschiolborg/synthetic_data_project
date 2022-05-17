@@ -221,7 +221,7 @@ def plot_loss(
     """
     matplotlib figure of losses
     """
-    epochs = range(len(train_losses))
+    epochs = range(1, 1 + len(train_losses))
     fig = plt.figure(figsize=(10, 8))
     plt.plot(epochs, train_losses, label="Train")
     if val_losses is not None:
@@ -244,7 +244,7 @@ def plot_curves(
     """
     matplotlib figure of validation scores
     """
-    epochs = range(len(scores[0]))
+    epochs = range(1, 1 + len(scores[0]))
     fig = plt.figure(figsize=(10, 8))
     for score, label in zip(scores, labels):
         plt.plot(epochs, score, label=label)

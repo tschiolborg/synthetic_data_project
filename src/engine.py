@@ -126,10 +126,11 @@ def validate_detection(
 def evaluate_detection(model, data_loader, device, metric):
     """Evaluates detection model on test data"""
 
-    model.eval()
+    total_loss = []
 
     # iterate loader
     for images, targets in tqdm(data_loader, desc="Evaluating score", position=0, leave=True):
+        model.train()  # for computing validation loss
 
         targets = compute_detection_labels(targets)
 
@@ -137,16 +138,23 @@ def evaluate_detection(model, data_loader, device, metric):
         images = list(image.to(device) for image in images)
         targets = [{k: v.to(device) for k, v in t.items()} for t in targets]
 
+        # detection loss
+        loss_dict = model(images, targets)
+        losses = sum(loss for loss in loss_dict.values())
+
+        model.eval()
+
         # detections
         with torch.no_grad():
             detections = model(images)
 
         metric.update(detections, targets)
+        total_loss += [losses.item()]
 
     scores = metric.compute()
     metric.reset()
 
-    return scores
+    return np.mean(total_loss), scores
 
 
 @torch.inference_mode()
