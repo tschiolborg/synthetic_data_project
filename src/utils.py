@@ -12,7 +12,7 @@ import torchvision.transforms.functional as TF
 from PIL import ImageColor, ImageDraw, ImageFont
 
 from .config import Config, ConfigTest
-from .datasets import GTSDB_Dataset, MTSD_Dataset
+from .datasets import GTSDB_Dataset, MTSD_Dataset, SYNTH_Dataset
 from .transforms import Transforms
 
 dotenv.load_dotenv(override=True)
@@ -53,6 +53,37 @@ def load_data(cfg: Config):
         dataset_val = MTSD_Dataset(
             img_dir,
             anno_val,
+            transforms=my_transforms.get_transform(False),
+            only_detect=cfg.training.only_detect,
+            threshold=cfg.dataset.threshold,
+            keep_other=cfg.dataset.keep_other,
+        )
+
+    if cfg.dataset.name == "SYNTH":
+
+        SYNTH = os.getenv("SYNTH")
+        if not SYNTH:
+            raise Exception('Not able to find "SYNTH" environment variable')
+
+        MTSD = os.getenv("MTSD")
+        if not MTSD:
+            raise Exception('Not able to find "MTSD" environment variable (for validation)')
+
+        img_dir = os.path.join(SYNTH, "images")
+        anno_train = os.path.join(SYNTH, "annotations")
+
+        img_dir_val = os.path.join(MTSD, "images")
+        anno_val = os.path.join(MTSD, "anno_val")
+
+        dataset_train = SYNTH_Dataset(
+            image_dir=img_dir,
+            anno_dir=anno_train,
+            transforms=my_transforms.get_transform_gtsdb(cfg.dataset.train.do_transforms),
+            only_detect=cfg.training.only_detect,
+        )
+        dataset_val = MTSD_Dataset(
+            image_dir=img_dir_val,
+            anno_dir=anno_val,
             transforms=my_transforms.get_transform(False),
             only_detect=cfg.training.only_detect,
             threshold=cfg.dataset.threshold,

@@ -1,11 +1,12 @@
 import os
 from pathlib import Path
+import json
 
 import albumentations as A
 import cv2
 import dotenv
 import numpy as np
-import torchvision.transforms as T
+from tqdm import tqdm
 
 from src import augmentations
 
@@ -15,8 +16,12 @@ TEMP = os.getenv("TEMP")
 if not TEMP:
     raise Exception("Not able to find environment variable")
 
-DATA = os.getenv("DATA")
-if not DATA:
+COCO = os.getenv("COCO")
+if not COCO:
+    raise Exception("Not able to find environment variable")
+
+SYNTH = os.getenv("SYNTH")
+if not SYNTH:
     raise Exception("Not able to find environment variable")
 
 
@@ -58,7 +63,7 @@ def try_add_tmp(img, tmp, alpha=None, boxes=list()):
     tmp = cv2.cvtColor(tmp[:, :, :3], cv2.COLOR_BGR2RGB)
 
     # resize
-    max_size = np.random.randint(30, 100)
+    max_size = int(abs(np.random.normal(0, 30, size=1)) + 30)  # gaussian min 30 px
     tmp = A.LongestMaxSize(max_size=max_size)(image=tmp)["image"]
     mask = A.LongestMaxSize(max_size=max_size)(image=mask)["image"]
 
@@ -115,25 +120,38 @@ def generate_image(backgound_file, tmp_files):
     tmp_files: path to directory with template images
     """
 
+    # read background
     img = cv2.imread(backgound_file)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
+    # crop and resize
     crop_size = min(img.shape[0:2])
     img = A.CenterCrop(width=crop_size, height=crop_size)(image=img)["image"]
     img = A.Resize(width=1000, height=1000)(image=img)["image"]
 
+    # adjust brightness
     img, alpha, beta = augmentations.brightness(img)
 
     target = {"boxes": [], "labels": [], "areas": []}
 
-    for i in range(5):
-        tmp_file = os.path.join(TEMP, tmp_files[i])
+    # random number of templates (1 to max)
+    max_templates = 5
+    num_templates = np.random.randint(1, max_templates + 1)
+
+    # insert templates to background
+    for i in range(num_templates):
+
+        # choose random template
+        tmp_file = np.random.randint(0, len(tmp_files))
+
+        tmp_file = os.path.join(TEMP, tmp_files[tmp_file])
 
         # load
         tmp = cv2.imread(tmp_file, cv2.IMREAD_UNCHANGED)
 
         label = int(Path(tmp_file).stem)
 
+        # insert template
         output = None
         while output is None:
             output = try_add_tmp(img, tmp, alpha, target["boxes"])
@@ -145,12 +163,29 @@ def generate_image(backgound_file, tmp_files):
         target["labels"] += [label]
         target["areas"] += [(box[2] - box[0]) * (box[3] - box[1])]
 
-    print(target)
-    T.ToPILImage()(img).show()
+    # save annotations
+    id = Path(backgound_file).stem
+    path_anno = os.path.join(SYNTH, "annotations", id + ".json")
+    with open(path_anno, "w+") as f:
+        json.dump(target, f, indent=2)
+
+    # save image
+    path_image = os.path.join(SYNTH, "images", id + ".jpg")
+    cv2.imwrite(path_image, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
 
 
-tmp_files = sorted(os.listdir(TEMP))
+def main():
+    # templates
+    tmp_files = sorted(os.listdir(TEMP))
 
-backgound_file = os.path.join(DATA, "coco_test.jpg")
+    # backgrounds
+    backgound_files = sorted(os.listdir(os.path.join(COCO, "data")))
 
-generate_image(backgound_file, tmp_files)
+    for file in tqdm(backgound_files):
+        full_path = os.path.join(COCO, "data", file)
+        generate_image(full_path, tmp_files)
+
+
+if __name__ == "__main__":
+    main()
+

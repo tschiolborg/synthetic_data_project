@@ -3,7 +3,7 @@ training:
   use_coco: True
   only_detect: True
   num_classes: 54
-  epochs: 2
+  epochs: 1
 
 optimizer:
   name: SGD
@@ -19,7 +19,7 @@ lr_scheduler:
     gamma: 0.1
 
 dataset:
-  name: MTSD
+  name: SYNTH
   mtsd_labels: 
   num_workers: 4
   threshold: 900
@@ -29,13 +29,13 @@ dataset:
     batch_size: 4
     transforms:
       min_area: 0
-      img_size: 1000
+      img_size: 
   val:
     do_transforms: false
     batch_size: 2
     transforms:
       min_area: 0
-      img_size: 1000
+      img_size: 
   test:
 
 utils:

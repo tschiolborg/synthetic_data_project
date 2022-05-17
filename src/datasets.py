@@ -11,6 +11,8 @@ from torchvision.transforms import ToTensor
 
 
 class MTSD_Dataset(torch.utils.data.Dataset):
+    """Dataset for Mappilary Traffic Sign Dataset"""
+
     def __init__(
         self,
         image_dir,
@@ -102,6 +104,8 @@ def collate_fn(batch):
 
 
 class GTSDB_Dataset(torch.utils.data.Dataset):
+    """Dataset for the German Traffic Sign Detection Benchmark"""
+
     def __init__(self, image_dir, anno_dir, transforms=None, only_detect=False, mtsd_labels=None):
         self.image_dir = image_dir
         self.transforms = transforms
@@ -154,6 +158,49 @@ class GTSDB_Dataset(torch.utils.data.Dataset):
             target = {}
             target["boxes"] = torch.empty((0, 4), dtype=torch.float32)
             target["labels"] = torch.empty((0), dtype=torch.int64)
+
+        if self.transforms is not None:
+            img = self.transforms(img)
+        else:
+            img = ToTensor()(img)
+
+        return img, target
+
+    def __len__(self):
+        return len(self.imgs)
+
+
+class SYNTH_Dataset(torch.utils.data.Dataset):
+    """Dataset for the Synthetic Traffic Sign Dataset"""
+
+    def __init__(self, image_dir, anno_dir, transforms=None, only_detect=False):
+        self.image_dir = image_dir
+        self.anno_dir = anno_dir
+        self.transforms = transforms
+        self.only_detect = only_detect
+        self.imgs = list(sorted(os.listdir(image_dir)))
+        self.annos = list(sorted(os.listdir(anno_dir)))
+
+    def __getitem__(self, idx):
+        img_path = os.path.join(self.image_dir, self.imgs[idx])
+        img = Image.open(img_path).convert("RGB")
+
+        target_path = os.path.join(self.anno_dir, self.annos[idx])
+        with open(target_path) as f:
+            target = json.load(f)
+
+        if len(target["boxes"]) == 0:
+            target["boxes"] = torch.empty((0, 4), dtype=torch.float32)
+            target["labels"] = torch.empty((0), dtype=torch.int64)
+        else:
+            target["boxes"] = torch.as_tensor(target["boxes"], dtype=torch.float32)
+            target["areas"] = torch.as_tensor(target["areas"], dtype=torch.float32)
+
+            target["labels"] = (
+                torch.as_tensor(target["labels"], dtype=torch.int64)
+                if not self.only_detect
+                else torch.ones(len(target["labels"]), dtype=torch.int64)
+            )
 
         if self.transforms is not None:
             img = self.transforms(img)
