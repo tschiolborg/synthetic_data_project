@@ -131,7 +131,7 @@ def generate_image(backgound_file, tmp_files, text_files=None, max_distractions:
     # crop and resize
     crop_size = min(img.shape[0:2])
     img = A.CenterCrop(width=crop_size, height=crop_size)(image=img)["image"]
-    img = A.Resize(width=1500, height=1500)(image=img)["image"]
+    img = A.Resize(width=1000, height=1000)(image=img)["image"]
 
     # adjust brightness
     img, alpha, beta = augmentations.brightness(img)
@@ -198,7 +198,7 @@ def generate_image(backgound_file, tmp_files, text_files=None, max_distractions:
             )["image"]
 
         # paste texture
-        distraction[:, :, :3] = text
+        distraction[:, :, :3] = text[:, :, :3]
 
         # insert distraction onto image
         output = None

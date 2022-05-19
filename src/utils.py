@@ -69,8 +69,8 @@ def load_data(cfg: Config):
         if not MTSD:
             raise Exception('Not able to find "MTSD" environment variable (for validation)')
 
-        img_dir = os.path.join(SYNTH, "images")
-        anno_train = os.path.join(SYNTH, "annotations")
+        img_dir = os.path.join(SYNTH, "images2")
+        anno_train = os.path.join(SYNTH, "annotations2")
 
         img_dir_val = os.path.join(MTSD, "images")
         anno_val = os.path.join(MTSD, "anno_val")
