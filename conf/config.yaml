@@ -3,7 +3,7 @@ training:
   use_coco: True
   only_detect: True
   num_classes: 54
-  epochs: 5
+  epochs: 10
 
 optimizer:
   name: SGD
@@ -45,6 +45,6 @@ utils:
 
 checkpoint:
   resume: True
-  path: C:\Users\saibo\Documents\bachelor_project\outputs\2022-05-18\00-13-28
+  path: C:\Users\saibo\Documents\bachelor_project\outputs\2022-05-18\01-06-47
 
 

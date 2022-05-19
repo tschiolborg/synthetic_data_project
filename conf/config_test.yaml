@@ -3,17 +3,17 @@ testing:
   num_classes: 54
 
 dataset:
-  name: MTSD
+  name: GTSDB
   num_workers: 4
   mtsd_labels: C:\Users\saibo\Documents\bachelor_project\data\classes\map_gtsdb2num.json
   test:
     batch_size: 2
     transforms:
       min_area: 0
-      img_size: 1000
+      img_size: 
 
 
-model_dir: C:\Users\saibo\Documents\bachelor_project\outputs\2022-05-16\15-00-33\saved_models\model.pkl
+model_dir: C:\Users\saibo\Documents\bachelor_project\outputs\2022-05-18\01-06-47\saved_models\model.pkl
 classifier_dir: C:\Users\saibo\Documents\bachelor_project\outputs\_saved\mtsd_cls_10\saved_models\classifier.pkl
 
 save_dir: C:\Users\saibo\Documents\bachelor_project\outputs\_saved\test_gtsdb_30+10

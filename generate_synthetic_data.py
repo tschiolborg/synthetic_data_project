@@ -24,6 +24,10 @@ SYNTH = os.getenv("SYNTH")
 if not SYNTH:
     raise Exception("Not able to find environment variable")
 
+TEXT = os.getenv("TEXT")
+if not TEXT:
+    raise Exception("Not able to find environment variable")
+
 
 def get_mask(img):
     """
@@ -113,7 +117,7 @@ def try_add_tmp(img, tmp, alpha=None, boxes=list()):
     return output
 
 
-def generate_image(backgound_file, tmp_files):
+def generate_image(backgound_file, tmp_files, text_files=None, max_distractions: int = 0):
     """
     Pastes templates onto image
     backgound_file: path to background image
@@ -127,7 +131,7 @@ def generate_image(backgound_file, tmp_files):
     # crop and resize
     crop_size = min(img.shape[0:2])
     img = A.CenterCrop(width=crop_size, height=crop_size)(image=img)["image"]
-    img = A.Resize(width=1000, height=1000)(image=img)["image"]
+    img = A.Resize(width=1500, height=1500)(image=img)["image"]
 
     # adjust brightness
     img, alpha, beta = augmentations.brightness(img)
@@ -163,14 +167,54 @@ def generate_image(backgound_file, tmp_files):
         target["labels"] += [label]
         target["areas"] += [(box[2] - box[0]) * (box[3] - box[1])]
 
+    # number of distractions
+    num_distractions = np.random.randint(0, max_distractions + 1)
+    if text_files is None:
+        num_distractions = 0
+
+    # insert distractions
+    for i in range(num_distractions):
+
+        # choose random template
+        distraction_file = np.random.randint(0, len(tmp_files))
+        distraction_file = os.path.join(TEMP, tmp_files[distraction_file])
+        distraction = cv2.imread(distraction_file, cv2.IMREAD_UNCHANGED)
+
+        # get random texture
+        text_file = np.random.randint(0, len(text_files))
+        text_file = os.path.join(TEXT, text_files[text_file])
+
+        # load texture
+        text = cv2.imread(text_file, cv2.IMREAD_UNCHANGED)
+
+        # upscale or crop to match distraction
+        if text.shape[0] < distraction.shape[0] or text.shape[1] < distraction.shape[1]:
+            text = A.Resize(width=distraction.shape[1], height=distraction.shape[0])(image=text)[
+                "image"
+            ]
+        else:
+            text = A.RandomCrop(width=distraction.shape[1], height=distraction.shape[0])(
+                image=text
+            )["image"]
+
+        # paste texture
+        distraction[:, :, :3] = text
+
+        # insert distraction onto image
+        output = None
+        while output is None:
+            output = try_add_tmp(img, distraction, alpha, target["boxes"])
+
+        img = output["img"]
+
     # save annotations
     id = Path(backgound_file).stem
-    path_anno = os.path.join(SYNTH, "annotations", id + ".json")
+    path_anno = os.path.join(SYNTH, "annotations2", id + ".json")
     with open(path_anno, "w+") as f:
         json.dump(target, f, indent=2)
 
     # save image
-    path_image = os.path.join(SYNTH, "images", id + ".jpg")
+    path_image = os.path.join(SYNTH, "images2", id + ".jpg")
     cv2.imwrite(path_image, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
 
 
@@ -178,12 +222,15 @@ def main():
     # templates
     tmp_files = sorted(os.listdir(TEMP))
 
+    # distractions
+    text_files = sorted(os.listdir(TEXT))
+
     # backgrounds
     backgound_files = sorted(os.listdir(os.path.join(COCO, "data")))
 
     for file in tqdm(backgound_files):
         full_path = os.path.join(COCO, "data", file)
-        generate_image(full_path, tmp_files)
+        generate_image(full_path, tmp_files, text_files, 10)
 
 
 if __name__ == "__main__":
