@@ -13,7 +13,7 @@ dataset:
       img_size: 
 
 
-model_dir: C:\Users\saibo\Documents\bachelor_project\outputs\2022-05-18\01-06-47\saved_models\model.pkl
+model_dir: C:\Users\saibo\Documents\bachelor_project\outputs\_saved\synth_1\saved_models\model.pkl
 classifier_dir: C:\Users\saibo\Documents\bachelor_project\outputs\_saved\mtsd_cls_10\saved_models\classifier.pkl
 
-save_dir: C:\Users\saibo\Documents\bachelor_project\outputs\_saved\test_gtsdb_30+10
+save_dir: C:\Users\saibo\Documents\bachelor_project\outputs\_saved\output

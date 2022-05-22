@@ -173,13 +173,20 @@ class GTSDB_Dataset(torch.utils.data.Dataset):
 class SYNTH_Dataset(torch.utils.data.Dataset):
     """Dataset for the Synthetic Traffic Sign Dataset"""
 
-    def __init__(self, image_dir, anno_dir, transforms=None, only_detect=False):
+    def __init__(
+        self, image_dir, anno_dir, train: bool, transforms=None, only_detect: bool = False
+    ):
         self.image_dir = image_dir
         self.anno_dir = anno_dir
         self.transforms = transforms
         self.only_detect = only_detect
-        self.imgs = list(sorted(os.listdir(image_dir)))
-        self.annos = list(sorted(os.listdir(anno_dir)))
+
+        # split into train or test
+        imgs = list(sorted(os.listdir(image_dir)))
+        split_idx = int(len(imgs) * 0.8)
+        self.imgs = imgs[:split_idx] if train else imgs[split_idx:]
+        annos = list(sorted(os.listdir(anno_dir)))
+        self.annos = annos[:split_idx] if train else annos[split_idx:]
 
     def __getitem__(self, idx):
         img_path = os.path.join(self.image_dir, self.imgs[idx])

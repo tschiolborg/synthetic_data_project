@@ -20,6 +20,8 @@ lr_scheduler:
 
 dataset:
   name: SYNTH
+  img_dir: images4
+  anno_dir: annotations4
   mtsd_labels: 
   num_workers: 4
   threshold: 900
@@ -44,7 +46,7 @@ utils:
   model_dir: saved_models
 
 checkpoint:
-  resume: True
-  path: C:\Users\saibo\Documents\bachelor_project\outputs\2022-05-19\19-10-23
+  resume: False
+  path: 
 
 

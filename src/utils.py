@@ -65,29 +65,22 @@ def load_data(cfg: Config):
         if not SYNTH:
             raise Exception('Not able to find "SYNTH" environment variable')
 
-        MTSD = os.getenv("MTSD")
-        if not MTSD:
-            raise Exception('Not able to find "MTSD" environment variable (for validation)')
-
-        img_dir = os.path.join(SYNTH, "images2")
-        anno_train = os.path.join(SYNTH, "annotations2")
-
-        img_dir_val = os.path.join(MTSD, "images")
-        anno_val = os.path.join(MTSD, "anno_val")
+        img_dir = os.path.join(SYNTH, cfg.dataset.img_dir)
+        anno_dir = os.path.join(SYNTH, cfg.dataset.anno_dir)
 
         dataset_train = SYNTH_Dataset(
             image_dir=img_dir,
-            anno_dir=anno_train,
+            anno_dir=anno_dir,
+            train=True,
             transforms=my_transforms.get_transform_gtsdb(cfg.dataset.train.do_transforms),
             only_detect=cfg.training.only_detect,
         )
-        dataset_val = MTSD_Dataset(
-            image_dir=img_dir_val,
-            anno_dir=anno_val,
-            transforms=my_transforms.get_transform(False),
+        dataset_val = SYNTH_Dataset(
+            image_dir=img_dir,
+            anno_dir=anno_dir,
+            train=False,
+            transforms=my_transforms.get_transform_gtsdb(False),
             only_detect=cfg.training.only_detect,
-            threshold=cfg.dataset.threshold,
-            keep_other=cfg.dataset.keep_other,
         )
 
     elif cfg.dataset.name == "GTSDB":

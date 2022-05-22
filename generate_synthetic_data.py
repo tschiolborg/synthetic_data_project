@@ -209,12 +209,12 @@ def generate_image(backgound_file, tmp_files, text_files=None, max_distractions:
 
     # save annotations
     id = Path(backgound_file).stem
-    path_anno = os.path.join(SYNTH, "annotations2", id + ".json")
+    path_anno = os.path.join(SYNTH, "annotations4", id + ".json")
     with open(path_anno, "w+") as f:
         json.dump(target, f, indent=2)
 
     # save image
-    path_image = os.path.join(SYNTH, "images2", id + ".jpg")
+    path_image = os.path.join(SYNTH, "images4", id + ".jpg")
     cv2.imwrite(path_image, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
 
 
@@ -230,7 +230,7 @@ def main():
 
     for file in tqdm(backgound_files):
         full_path = os.path.join(COCO, "data", file)
-        generate_image(full_path, tmp_files, text_files, 10)
+        generate_image(full_path, tmp_files, text_files, 0)
 
 
 if __name__ == "__main__":

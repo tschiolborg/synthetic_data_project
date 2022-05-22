@@ -31,7 +31,7 @@ def perspective(tmp, mask, x):
 
     h, w = tmp.shape[0], tmp.shape[1]
 
-    left = x - round(1000 / 2) > 0
+    left = np.random.randint(0, 2) == 1  # x - round(1000 / 2) > 0
 
     p_min, p_max = round(w * 0.07), round(w * 0.14)
     p = np.random.randint(p_min, p_max + 1)
