@@ -82,9 +82,9 @@ def try_add_tmp(img, tmp, alpha=None, boxes=list()):
     pos1 = np.random.randint(0, max1 + 1)
 
     # geometric transformations
-    tmp, mask, p = augmentations.perspective(tmp, mask, pos1)
-    tmp, mask, theta = augmentations.rotate(tmp, mask)
-    tmp, mask, factor = augmentations.scale(tmp, mask, relative_x=2 * pos1 / img.shape[1])
+    # tmp, mask, p = augmentations.perspective(tmp, mask, pos1)
+    # tmp, mask, theta = augmentations.rotate(tmp, mask)
+    # tmp, mask, factor = augmentations.scale(tmp, mask, relative_x=2 * pos1 / img.shape[1])
     tmp, mask = augmentations.remove_padding(tmp, mask)  # remove padding
 
     # position
@@ -126,6 +126,10 @@ def generate_image(backgound_file, tmp_files, text_files=None, max_distractions:
 
     # read background
     img = cv2.imread(backgound_file)
+    if img is None:
+        print(f"Error loading file: {backgound_file}")
+        return
+
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
     # crop and resize
@@ -209,12 +213,12 @@ def generate_image(backgound_file, tmp_files, text_files=None, max_distractions:
 
     # save annotations
     id = Path(backgound_file).stem
-    path_anno = os.path.join(SYNTH, "annotations4", id + ".json")
+    path_anno = os.path.join(SYNTH, "annotations5", id + ".json")
     with open(path_anno, "w+") as f:
         json.dump(target, f, indent=2)
 
     # save image
-    path_image = os.path.join(SYNTH, "images4", id + ".jpg")
+    path_image = os.path.join(SYNTH, "images5", id + ".jpg")
     cv2.imwrite(path_image, cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
 
 

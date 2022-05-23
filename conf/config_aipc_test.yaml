@@ -1,0 +1,19 @@
+testing:
+  only_detect: False
+  num_classes: 54
+
+dataset:
+  name: GTSDB
+  num_workers: 4
+  mtsd_labels: C:\workspace\synthetic-ai\data\classes\map_gtsdb2num.json
+  test:
+    batch_size: 2
+    transforms:
+      min_area: 0
+      img_size: 
+
+
+model_dir: C:\workspace\synthetic-ai\outputs\2022-05-20\10-12-06\saved_models\model.pkl
+classifier_dir: 
+
+save_dir: 
