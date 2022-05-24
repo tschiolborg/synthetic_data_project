@@ -1,7 +1,7 @@
 
 training:
   num_classes: 53
-  epochs: 10
+  epochs: 5
   only_detect: false
   criterion: CrossEntropyLoss
 
@@ -12,7 +12,9 @@ optimizer:
     eps: 0.1
 
 dataset:
-  name: MTSD
+  name: SYNTH
+  img_dir: images6
+  anno_dir: annotations6
   mtsd_labels: 
   num_workers: 4
   threshold: 900
@@ -37,7 +39,7 @@ utils:
   model_dir: saved_models
 
 checkpoint:
-  resume: true
+  resume: false
   path: C:\Users\saibo\Documents\bachelor_project\outputs\2022-05-08\21-31-20
 
 
