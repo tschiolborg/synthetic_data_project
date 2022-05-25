@@ -111,7 +111,7 @@ class GTSDB_Dataset(torch.utils.data.Dataset):
         self.transforms = transforms
         self.only_detect = only_detect
         self.mtsd_labels = mtsd_labels
-        self.imgs = list(sorted(os.listdir(image_dir)))
+        self.imgs = list(sorted(os.listdir(image_dir)))[:300]
 
         anno_file = np.genfromtxt(
             os.path.join(anno_dir, "gt.txt"), delimiter=";", dtype=None, encoding=None

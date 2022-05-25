@@ -59,7 +59,7 @@ def load_data(cfg: Config):
             keep_other=cfg.dataset.keep_other,
         )
 
-    if cfg.dataset.name == "SYNTH":
+    elif cfg.dataset.name == "SYNTH":
 
         SYNTH = os.getenv("SYNTH")
         if not SYNTH:

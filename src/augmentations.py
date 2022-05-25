@@ -20,7 +20,7 @@ def brightness(img, alpha=None, beta=None):
     return np.clip(adjusted_image, a_min=0, a_max=255).astype(np.uint8), alpha, beta
 
 
-def perspective(tmp, mask, x):
+def perspective(tmp, mask, x=None):
     """
     performs a perspective augmentation on image
     tmp: image (template)
@@ -31,7 +31,7 @@ def perspective(tmp, mask, x):
 
     h, w = tmp.shape[0], tmp.shape[1]
 
-    left = x - round(1000 / 2) > 0
+    left = x - round(1000 / 2) > 0 if x is not None else bool(np.random.randint(0, 2))
 
     p_min, p_max = round(w * 0.07), round(w * 0.14)
     p = np.random.randint(p_min, p_max + 1)

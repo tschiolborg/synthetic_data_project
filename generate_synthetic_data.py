@@ -82,7 +82,7 @@ def try_add_tmp(img, tmp, alpha=None, boxes=list()):
     pos1 = np.random.randint(0, max1 + 1)
 
     # geometric transformations
-    tmp, mask, p = augmentations.perspective(tmp, mask, pos1)
+    tmp, mask, p = augmentations.perspective(tmp, mask, x=None)
     tmp, mask, theta = augmentations.rotate(tmp, mask)
     tmp, mask, factor = augmentations.scale(tmp, mask, relative_x=2 * pos1 / img.shape[1])
     tmp, mask = augmentations.remove_padding(tmp, mask)  # remove padding
@@ -234,7 +234,7 @@ def main():
 
     for file in tqdm(backgound_files):
         full_path = os.path.join(COCO, "data", file)
-        generate_image(full_path, tmp_files, text_files, 0)
+        generate_image(full_path, tmp_files, text_files, 10)
 
 
 if __name__ == "__main__":
