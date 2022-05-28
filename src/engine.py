@@ -1,5 +1,7 @@
 import warnings
 from typing import Dict, List, Optional
+import json
+import os
 
 import numpy as np
 import torch
@@ -159,7 +161,14 @@ def evaluate_detection(model, data_loader, device, metric):
 
 @torch.inference_mode()
 def evalute_both_stages(
-    model, classifier, data_loader, device, metric_dec, metric_cls, cls_input_size: int,
+    model,
+    classifier,
+    data_loader,
+    device,
+    metric_dec,
+    metric_cls,
+    cls_input_size: int,
+    write: bool = False,
 ):
     """Evaluate full detection with both model + classifier on test data"""
 
@@ -234,6 +243,44 @@ def evalute_both_stages(
             #     print()
             #     print()
             #     print()
+
+        if write:
+            for target, detection in zip(targets_cls, updated_detections):
+
+                i = 0
+                for label, score, box, in zip(
+                    detection["labels"], detection["scores"], detection["boxes"]
+                ):
+                    path = os.path.join(
+                        os.getcwd(),
+                        "outputs",
+                        "_output",
+                        str(int(target["image_id"])) + str(i) + ".json",
+                    )
+                    with open(path, "w+",) as f:
+                        output = {}
+                        output["image_id"] = int(target["image_id"])
+                        output["category_id"] = int(label)
+                        output["score"] = float(score)
+                        output["bbox"] = box.tolist()
+                        json.dump(output, f, indent=6)
+                    i += 1
+
+                j = 0
+                for label, box, in zip(target["labels"], target["boxes"]):
+                    path = os.path.join(
+                        os.getcwd(),
+                        "outputs",
+                        "_output_target",
+                        str(int(target["image_id"])) + str(j) + ".json",
+                    )
+                    with open(path, "w+",) as f:
+                        output = {}
+                        output["image_id"] = int(target["image_id"])
+                        output["category_id"] = int(label)
+                        output["bbox"] = box.tolist()
+                        json.dump(output, f, indent=6)
+                    j += 1
 
     # compute metric
     scores_dec = metric_dec.compute()

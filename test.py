@@ -34,7 +34,7 @@ def test_full_model():
     classifier = torch.load(cfg.classifier_dir)
 
     metric_dec = MeanAveragePrecision()
-    metric_cls = MeanAveragePrecision()
+    metric_cls = MeanAveragePrecision(iou_thresholds=[0.5, 0.75], class_metrics=True)
 
     model = model.to(device)
 
@@ -47,6 +47,7 @@ def test_full_model():
         metric_dec=metric_dec,
         metric_cls=metric_cls,
         cls_input_size=224,
+        write=False,
     )
 
     print("Detection scores: ")
@@ -56,11 +57,11 @@ def test_full_model():
     print(scores_cls)
 
     # log
-    os.makedirs(cfg.save_dir, exist_ok=True)
-    writer = Json_writer(os.path.join(cfg.save_dir, "result.json"))
-    writer.add_scalars("Test/detection/scores", scores_dec)
-    writer.add_scalars("Test/scores", scores_cls)
-    writer.flush()
+    # os.makedirs(cfg.save_dir, exist_ok=True)
+    # writer = Json_writer(os.path.join(cfg.save_dir, "result.json"))
+    # writer.add_scalars("Test/detection/scores", scores_dec)
+    # writer.add_scalars("Test/scores", scores_cls)
+    # writer.flush()
 
     return
 

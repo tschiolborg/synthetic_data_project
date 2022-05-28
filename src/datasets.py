@@ -93,6 +93,8 @@ class MTSD_Dataset(torch.utils.data.Dataset):
             target["boxes"] = torch.empty((0, 4), dtype=torch.float32)
             target["labels"] = torch.empty((0), dtype=torch.int64)
 
+        target["image_id"] = torch.as_tensor(idx)
+
         return img, target
 
     def __len__(self):
