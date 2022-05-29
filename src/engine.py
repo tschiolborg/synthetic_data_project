@@ -248,16 +248,21 @@ def evalute_both_stages(
             for target, detection in zip(targets_cls, updated_detections):
 
                 i = 0
-                for label, score, box, in zip(
-                    detection["labels"], detection["scores"], detection["boxes"]
-                ):
+                for (
+                    label,
+                    score,
+                    box,
+                ) in zip(detection["labels"], detection["scores"], detection["boxes"]):
                     path = os.path.join(
                         os.getcwd(),
                         "outputs",
                         "_output",
                         str(int(target["image_id"])) + str(i) + ".json",
                     )
-                    with open(path, "w+",) as f:
+                    with open(
+                        path,
+                        "w+",
+                    ) as f:
                         output = {}
                         output["image_id"] = int(target["image_id"])
                         output["category_id"] = int(label)
@@ -267,14 +272,20 @@ def evalute_both_stages(
                     i += 1
 
                 j = 0
-                for label, box, in zip(target["labels"], target["boxes"]):
+                for (
+                    label,
+                    box,
+                ) in zip(target["labels"], target["boxes"]):
                     path = os.path.join(
                         os.getcwd(),
                         "outputs",
                         "_output_target",
                         str(int(target["image_id"])) + str(j) + ".json",
                     )
-                    with open(path, "w+",) as f:
+                    with open(
+                        path,
+                        "w+",
+                    ) as f:
                         output = {}
                         output["image_id"] = int(target["image_id"])
                         output["category_id"] = int(label)
@@ -344,7 +355,13 @@ def train_one_epoch_cls(
 
 @torch.inference_mode()
 def validate_cls(
-    classifier, criterion, data_loader, device, epoch: int, cls_input_size: int, writers=None,
+    classifier,
+    criterion,
+    data_loader,
+    device,
+    epoch: int,
+    cls_input_size: int,
+    writers=None,
 ):
     """Validation of classification model"""
 

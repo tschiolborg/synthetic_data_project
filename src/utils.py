@@ -493,7 +493,12 @@ def crop_to_bbox(images, targets, img_size):
 
             # horizontal and vertical axes are switched
             new_img = TF.resized_crop(
-                img=img, top=top, left=left, height=height, width=width, size=(img_size, img_size),
+                img=img,
+                top=top,
+                left=left,
+                height=height,
+                width=width,
+                size=(img_size, img_size),
             )
             cropped_images += [new_img]
 
