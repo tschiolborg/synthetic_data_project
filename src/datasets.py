@@ -87,7 +87,7 @@ class MTSD_Dataset(torch.utils.data.Dataset):
             target["boxes"] = torch.as_tensor(sample["bboxes"], dtype=torch.float32)
             target["labels"] = torch.as_tensor(sample["labels"], dtype=torch.int64)
         else:
-            img = ToTensorV2()(img)
+            img = ToTensorV2()(image=img)["image"]
 
         if len(target["boxes"]) == 0:
             target["boxes"] = torch.empty((0, 4), dtype=torch.float32)
