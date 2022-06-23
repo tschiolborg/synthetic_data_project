@@ -3,6 +3,24 @@ Synthetic data project
 
 Synthetic data for traing deep neural networks for object detection on traffic signs.
 
+
+## Content
+
+- [Synthetic data project](#synthetic-data-project)
+  - [Content](#content)
+  - [Real data](#real-data)
+  - [Synthetic data](#synthetic-data)
+  - [Detection example](#detection-example)
+  - [Model](#model)
+  - [Erros](#erros)
+  - [Important factors for gerating synthetic data](#important-factors-for-gerating-synthetic-data)
+  - [Using synthetic data for pre-training](#using-synthetic-data-for-pre-training)
+  - [Implementation details](#implementation-details)
+  - [Requirements](#requirements)
+  - [Run](#run)
+  - [Project Structure](#project-structure)
+
+
 ## Real data
 
 For real data the [Mapillary Traffic Sign Dataset](/reports/MTSD/README.md) is used for training and testing.
