@@ -1,3 +1,5 @@
+# script to get COCO dataset
+
 import fiftyone as fo
 import fiftyone.zoo as foz
 from tqdm import tqdm
@@ -59,7 +61,9 @@ export_dir = r"C:\Users\saibo\Documents\bachelor_project\data\COCO"
 
 # Export the dataset
 final_dataset.export(
-    export_dir=export_dir, dataset_type=dataset_type, label_field="ground_truth",
+    export_dir=export_dir,
+    dataset_type=dataset_type,
+    label_field="ground_truth",
 )
 
 if __name__ == "__main__":

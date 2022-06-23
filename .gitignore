@@ -1,27 +1,15 @@
 ### Define your own
 outputs/*
-!outputs/_saved/
-common_outputs/
 
 data/*
 !data/classes/
 !data/templates/
-!data/coco_test.jpg
-
-saved_models/
-
-.old/
 
 logs/
 .env
 .autoenv
 .vscode/
 
-zzz.ipynb
-zzzz.ipynb
-*EB0rrpZwuI.*
-
-GTSRB/
 
 #### MAC
 
